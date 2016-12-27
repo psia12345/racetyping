@@ -1,4 +1,9 @@
-const div = document.getElementById('testing');
-const p = document.createElement('p');
-p.textContent = "testing 123";
-div.appendChild(p); 
+import readTextFile from './generateText';
+const divCanvasContainer = document.getElementById('canvas-container');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const WIDTH = Math.max(window.innerWidth * 0.8 || 0);
+const HEIGHT = Math.max(window.innerHeight * 0.8 || 0);
+canvas.width = WIDTH;
+canvas.height = HEIGHT;
+readTextFile('../dictionary.txt');

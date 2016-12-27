@@ -1,0 +1,14 @@
+#canvas-container{
+  margin: 20px auto;
+  position: relative;
+}
+#canvas{
+  border: 2px solid black;
+}
+
+.clearfix:after{
+  display: block;
+  content: "";
+  clear: both;
+  height: 0;
+}
