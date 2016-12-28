@@ -1,3 +1,31 @@
+#typing-text{
+  border: 1px solid blue;
+  width: 80%;
+  white-space: nowrap;
+  margin: 10px auto;
+}
+p {
+  margin: 10px auto;
+  width: 90%;
+  overflow: hidden;
+}
+#user-input{
+  width: 80%;
+  height: 70px;
+  margin: 10px auto;
+  border: 1px solid darkblue;
+}
+input{
+  width: 90%;
+  height: 50px;
+  margin: 10px auto;
+  border: 1px solid black;
+  /*will need to delete border here */
+  display: block;
+}
+input:focus {
+  outline: none;
+}
 #canvas-container{
   margin: 20px auto;
   position: relative;

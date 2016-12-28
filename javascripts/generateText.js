@@ -1,12 +1,15 @@
-const readTextFile = file => {
-  const rawFile = new XMLHttpRequest();
-  rawFile.open("GET", file, false);
-  rawFile.onreadystatechange = () => {
-    if (rawFile.readyState === 4 && (rawFile.status === 200 || rawFile.status === 0)) {
-      const allText = rawFile.responseText;
-      console.log(allText);
-    }
+import readTextFile from './readingTextFile';
+
+const WORDS = readTextFile('../dictionary.txt');
+const generateRandomNumber = (min, max) => Math.floor(Math.random() * (max - min)) + min; // exclude upper max number
+
+const generateText = () => {
+  let words = "";
+  for ( let i = 0; i < 20; i++){
+    words += WORDS[(generateRandomNumber(0, WORDS.length))];
+    words += " ";
   }
-  rawFile.send(null);
+  return words;
 }
-export default readTextFile;
+
+export default generateText;
