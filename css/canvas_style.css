@@ -40,3 +40,13 @@ input:focus {
   clear: both;
   height: 0;
 }
+
+.correct-highlight{
+  color: #5f5959;
+  background-color: #dadada;
+}
+
+.incorrect-highlight{
+  color: red;
+  background-color: #ffd2dc;
+}
