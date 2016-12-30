@@ -11,7 +11,7 @@ let numWrong = 0;
 let numCorrect = 0;
 let wordsArray = words.split(" ");
 let numWordsTyped = 0;
-let time = new Timer(0);
+let time = new Timer(1);
 let laterString = "";
 
 const input = document.getElementById('user-typing');
@@ -61,12 +61,22 @@ input.addEventListener('click', e => {
 input.addEventListener("keydown", e => {if (e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 37 || e.keyCode === 39) return false}, false);
 
 const startButton = document.getElementById('start');
+let incrementTime;
 startButton.addEventListener('click', e => {
-  time.displayTimer(0);
-  window.setInterval(timer, 1000);
+  time.displayTimer();
+  startButton.innerHTML = 'Pause';
+  let buttonClass = startButton.className;
+  if (buttonClass === 'pause' ) {
+    clearInterval(incrementTime);
+    time.pauseTime();
+  } else {
+    incrementTime = window.setInterval(incrementSeconds, 1000);
+  }
 });
 
-const timer = () => {
+const incrementSeconds = () => {
+  startButton.innerHTML = 'Pause';
+  startButton.className = 'pause';
   let seconds = time.timer++;
   time.displayTimer();
 };

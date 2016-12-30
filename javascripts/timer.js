@@ -11,5 +11,10 @@ class Timer{
     if ( previousTimer ) timerDiv.removeChild(previousTimer);
     timerDiv.appendChild(timerSpan);
   }
+  pauseTime(){
+    const startButton = document.getElementById('start');
+    startButton.className = 'start';
+    startButton.innerHTML = 'Resume';
+  }
 }
 export default Timer;
