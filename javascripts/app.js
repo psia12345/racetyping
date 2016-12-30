@@ -9,6 +9,7 @@ let numLetters = words.length;
 let numWrong = 0;
 let numCorrect = 0;
 let wordsArray = words.split(" ");
+let numWordsTyped = 0;
 let timer = 0;
 let laterString = "";
 
@@ -60,4 +61,21 @@ input.addEventListener('click', e => {
 input.addEventListener("keydown", e => {if (e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 37 || e.keyCode === 39) return false}, false);
 
 const startButton = document.getElementById('start');
-startButton.addEventListener('click', e => console.log(e));
+startButton.addEventListener('click', e => {
+  displayTimer();
+  window.setInterval(incrementSecond, 1000);
+});
+
+const displayTimer = () => {
+  const timerDiv = document.getElementById('timer');
+  const timerSpan = document.createElement('span');
+  timerSpan.className = 'timer';
+  timerSpan.innerHTML = timer;
+  let previousTimer = document.getElementsByClassName('timer')[0];
+  if ( previousTimer ) timerDiv.removeChild(previousTimer);
+  timerDiv.appendChild(timerSpan);
+}
+const incrementSecond = () => {
+  timer++;
+  displayTimer();
+};
