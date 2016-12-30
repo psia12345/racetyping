@@ -1,22 +1,15 @@
 import generateText from './generateText';
-import moveCursor from './typingLogic';
-//
-// const divCanvasContainer = document.getElementById('canvas-container');
-// const canvas = document.getElementById('canvas');
-// const ctx = canvas.getContext('2d');
-// const WIDTH = Math.max(window.innerWidth * 0.8 || 0);
-// const HEIGHT = Math.max(window.innerHeight * 0.8 || 0);
 
 const pText = document.getElementById('text');
 let words = generateText();
 pText.textContent = words;
-console.log(words);
 
 let cursorPos = 0;
 let numLetters = words.length;
 let numWrong = 0;
 let numCorrect = 0;
-const timer = 0;
+let wordsArray = words.split(" ");
+let timer = 0;
 let laterString = "";
 
 const input = document.getElementById('user-typing');
@@ -24,21 +17,47 @@ input.addEventListener('keypress', e =>{
   if (laterString === ""){
     laterString = pText.innerHTML.slice(cursorPos, numLetters);
   }
+  const currentLetter = document.createElement('span');
+  currentLetter.innerHTML = laterString[0];
+  const nextLetter = document.createElement('span');
+  nextLetter.innerHTML = laterString[1];
+  let highlightedElement = document.getElementsByClassName("highlight")[0];
+  if (highlightedElement){
+    highlightedElement.nextSibling.textContent = "";
+    pText.removeChild(highlightedElement);
+  } else {
+    pText.textContent = "";
+  }
+  nextLetter.className = "highlight";
+  if (cursorPos > 10 && cursorPos < numLetters){
+
+  }
+  if (cursorPos < numLetters && laterString[0] === e.key){
+    currentLetter.className = "correct-highlight";
+  } else {
+    currentLetter.className = "incorrect-highlight";
+  }
+  pText.appendChild(currentLetter);
+  pText.appendChild(nextLetter);
+  laterString = laterString.replace(laterString[0], "");
+  let stringToAppend = laterString.replace(laterString[0], "");
+  pText.appendChild(document.createTextNode(stringToAppend));
+  cursorPos++;
+});
+
+input.addEventListener('click', e => {
+  if (laterString === "") laterString = pText.innerHTML.slice(cursorPos, numLetters);
+  pText.innerHTML = pText.innerHTML.replace(laterString, "");
   const span = document.createElement('span');
   span.innerHTML = laterString[0];
-  if (cursorPos < numLetters && laterString[0] === e.key){
-    pText.innerHTML = pText.innerHTML.replace(laterString, "");
-    span.className = "correct-highlight";
-    pText.appendChild(span);
-  } else {
-    pText.innerHTML = pText.innerHTML.replace(laterString, "");
-    span.className = "incorrect-highlight";
-    pText.appendChild(span);
-  }
-  cursorPos++;
-  laterString = laterString.replace(laterString[0], "");
-  pText.appendChild(document.createTextNode(laterString));
-});
+  span.className = "highlight";
+  pText.appendChild(span);
+  debugger;
+  let stringToAppend = laterString.replace(laterString[0], ""); ;
+  pText.appendChild(document.createTextNode(stringToAppend));
+})
+
+input.addEventListener("keydown", e => {if (e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 37 || e.keyCode === 39) return false}, false);
 
 const startButton = document.getElementById('start');
 startButton.addEventListener('click', e => console.log(e));
