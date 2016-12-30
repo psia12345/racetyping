@@ -1,4 +1,5 @@
 import generateText from './generateText';
+import Timer from './timer';
 
 const pText = document.getElementById('text');
 let words = generateText();
@@ -10,7 +11,7 @@ let numWrong = 0;
 let numCorrect = 0;
 let wordsArray = words.split(" ");
 let numWordsTyped = 0;
-let timer = 0;
+let time = new Timer(0);
 let laterString = "";
 
 const input = document.getElementById('user-typing');
@@ -53,7 +54,6 @@ input.addEventListener('click', e => {
   span.innerHTML = laterString[0];
   span.className = "highlight";
   pText.appendChild(span);
-  debugger;
   let stringToAppend = laterString.replace(laterString[0], ""); ;
   pText.appendChild(document.createTextNode(stringToAppend));
 })
@@ -62,20 +62,11 @@ input.addEventListener("keydown", e => {if (e.keyCode === 38 || e.keyCode === 40
 
 const startButton = document.getElementById('start');
 startButton.addEventListener('click', e => {
-  displayTimer();
-  window.setInterval(incrementSecond, 1000);
+  time.displayTimer(0);
+  window.setInterval(timer, 1000);
 });
 
-const displayTimer = () => {
-  const timerDiv = document.getElementById('timer');
-  const timerSpan = document.createElement('span');
-  timerSpan.className = 'timer';
-  timerSpan.innerHTML = timer;
-  let previousTimer = document.getElementsByClassName('timer')[0];
-  if ( previousTimer ) timerDiv.removeChild(previousTimer);
-  timerDiv.appendChild(timerSpan);
-}
-const incrementSecond = () => {
-  timer++;
-  displayTimer();
+const timer = () => {
+  let seconds = time.timer++;
+  time.displayTimer();
 };
