@@ -248,9 +248,21 @@
 	      wordsArray = allText.split("\n");
 	    }
 	  };
-	  rawFile.send(null);
+	  rawFile.send();
 	  return wordsArray;
 	};
+	
+	// const readTextFile = file => {
+	//    let str = "";
+	//    let txtFile = new File(file);
+	//    txtFile.open('r');
+	//    while (!txtFile.eof){
+	//      str += txtFile.readln() + '/n';
+	//    }
+	//    return str;
+	// }
+	
+	var reader = new FileReader();
 	
 	var WORDS = readTextFile('../dictionary.txt');
 	var generateRandomNumber = function generateRandomNumber(min, max) {

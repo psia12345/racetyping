@@ -8,9 +8,22 @@ const readTextFile = file => {
       wordsArray = allText.split("\n");
     }
   }
-  rawFile.send(null);
+  rawFile.send();
   return wordsArray;
 }
+
+// const readTextFile = file => {
+//    let str = "";
+//    let txtFile = new File(file);
+//    txtFile.open('r');
+//    while (!txtFile.eof){
+//      str += txtFile.readln() + '/n';
+//    }
+//    return str;
+// }
+
+const reader = new FileReader();
+
 
 const WORDS = readTextFile('../dictionary.txt');
 const generateRandomNumber = (min, max) => Math.floor(Math.random() * (max - min)) + min; // exclude upper max number
