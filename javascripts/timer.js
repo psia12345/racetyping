@@ -15,6 +15,8 @@ class Timer{
     const startButton = document.getElementById('start');
     startButton.className = 'start';
     startButton.innerHTML = 'Resume';
+    const input = document.getElementById('user-typing');
+    input.blur();
   }
 }
 export default Timer;
