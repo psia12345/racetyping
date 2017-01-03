@@ -25,7 +25,7 @@ const readTextFile = file => {
 const reader = new FileReader();
 
 
-const WORDS = readTextFile('../racetyping/blob/master/dictionary.txt');
+const WORDS = readTextFile('https://github.com/psia12345/racetyping/blob/master/dictionary.txt');
 const generateRandomNumber = (min, max) => Math.floor(Math.random() * (max - min)) + min; // exclude upper max number
 
 const generateText = () => {
