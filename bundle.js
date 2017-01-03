@@ -264,7 +264,7 @@
 	
 	var reader = new FileReader();
 	
-	var WORDS = readTextFile('../dictionary.txt');
+	var WORDS = readTextFile('../racetyping/blob/master/dictionary.txt');
 	var generateRandomNumber = function generateRandomNumber(min, max) {
 	  return Math.floor(Math.random() * (max - min)) + min;
 	}; // exclude upper max number
