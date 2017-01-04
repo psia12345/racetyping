@@ -1,9 +1,10 @@
 import generateText from './generateText';
 import Timer from './timer';
 import highlightCurrentWord from './highlightText';
+import randomWords from 'random-words';
 
 const pText = document.getElementById('text');
-let words = generateText();
+let words = randomWords(20).join(' ');
 pText.textContent = words;
 
 let cursorPos = 0;
