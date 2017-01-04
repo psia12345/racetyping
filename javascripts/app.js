@@ -2,6 +2,7 @@ import Timer from './timer';
 import highlightCurrentWord from './highlightText';
 import randomWords from 'random-words';
 import moveCursor from './moveCursor';
+import calculateWPM from './calculateWPM';
 
 const pText = document.getElementById('text');
 let words = randomWords(5).join(' ');
@@ -20,18 +21,23 @@ let intervalId;
 const initializeGame = () => {
   time.timer++;
   time.displayTimer();
+  console.log(calculateWPM(time.timer));
   intervalId = window.setInterval(incrementSeconds, 1000);
 }
 
 const incrementSeconds = () => {
   let seconds = time.timer++;
   time.displayTimer();
+  console.log(input.textContent);
+  console.log(calculateWPM(seconds));
 };
 
 const gameOver = cursorPos => {
   if (cursorPos === wordsArray.length){
     window.clearInterval(intervalId);
     modal.style.display = 'block';
+    console.log(input.textContent);
+    // console.log(calculateWPM(seconds));
   }
 }
 

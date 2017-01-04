@@ -62,6 +62,10 @@
 	
 	var _moveCursor2 = _interopRequireDefault(_moveCursor);
 	
+	var _calculateWPM = __webpack_require__(5);
+	
+	var _calculateWPM2 = _interopRequireDefault(_calculateWPM);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var pText = document.getElementById('text');
@@ -81,18 +85,23 @@
 	var initializeGame = function initializeGame() {
 	  time.timer++;
 	  time.displayTimer();
+	  console.log((0, _calculateWPM2.default)(time.timer));
 	  intervalId = window.setInterval(incrementSeconds, 1000);
 	};
 	
 	var incrementSeconds = function incrementSeconds() {
 	  var seconds = time.timer++;
 	  time.displayTimer();
+	  console.log(input.textContent);
+	  console.log((0, _calculateWPM2.default)(seconds));
 	};
 	
 	var gameOver = function gameOver(cursorPos) {
 	  if (cursorPos === wordsArray.length) {
 	    window.clearInterval(intervalId);
 	    modal.style.display = 'block';
+	    console.log(input.textContent);
+	    // console.log(calculateWPM(seconds));
 	  }
 	};
 	
@@ -588,6 +597,28 @@
 	};
 	
 	exports.default = moveCursor;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var typedText = document.getElementById('user-typing').textContent;
+	var charCount = typedText.length;
+	
+	var calculateWPM = function calculateWPM(timeInSec) {
+	  return Math.floor(charCount / timeInSec * 60);
+	};
+	var adjustedWPM = function adjustedWPM(timeInSec, numWrong) {
+	  return Math.floor(calculateWPM((timeInSec - numWrong) / timeInSec * 60));
+	};
+	
+	exports.default = calculateWPM;
+	// export default adjustedWPM;
 
 /***/ }
 /******/ ]);
