@@ -7,16 +7,21 @@
     <title>Race Typing</title>
   </head>
   <body>
-    <div id="typing-text">
-      <p id="text"></p>
-    </div>
-    <div id="user-input">
-      <div id="user-typing" contenteditable="true"/>
-    </div>
-    <div id="game-controller">
-      <button>Join Game</button>
-      <button>End Game</button>
-    </div>
+    <nav>
+      <div id="nav-bar">
+        <div id="results">
+          <div class="nav" id="timer"><img src="http://res.cloudinary.com/psia12345/image/upload/c_scale,h_50/v1483605541/timer_wa8hir.png" alt="timer">
+          </div>
+          <div id="bar" class="nav clearfix"></div>
+          <div class="nav wpm" id="wpm">WPM:
+            <span class="wpm">0</span>
+          </div>
+        </div>
+        <div id="game-controller">
+          <div class="nav" id="end-game">End Game</div>
+        </div>
+      </div>
+    </nav>
     <div id='modal' class='modal'>
       <div class='modal-content'>
         <p>Results:</p>
@@ -28,13 +33,31 @@
         <button>Return to Main Page</button>
       </div>
     </div>
-    <div id="results">
-      <div id="timer">Timer:</div>
-      <div id="wpm">WPM:</div>
-    </div>
     <div class="clearfix" id="canvas-container">
-      <canvas id="canvas"></canvas>
+      <canvas id="canvas" height="350px"></canvas>
+      <div class="images">
+        <img
+        src="https://res.cloudinary.com/psia12345/image/upload/c_scale,h_450,w_1000/v1483595002/Racetrack_ohtjjp.jpg"
+        alt="racetrack" id="racetrack">
+        <img src="images/greenCar.gif" alt="green car" id="greencar">
+        <img src="images/redCar.gif" alt="red car" id="redcar">
+      </div>
     </div>
+
+    <div id="clearfix">
+      <div id="bottom-logic">
+        <div id="typing-text">
+          <div id="text"></div>
+        </div>
+        <div id="user-input">
+          <div id="user-typing" contenteditable="true"/>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <script type="text/javascript" src="bundle.js"></script>
+    <script type="text/javascript" src="javascripts/car.js"></script>
   </body>
 </html>

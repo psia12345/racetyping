@@ -14,6 +14,7 @@ class Timer{
   incrementSeconds(){
     this.timer++;
     this.displayTimer();
+    // console.log(this.timer);
   }
 }
 module.exports = Timer;

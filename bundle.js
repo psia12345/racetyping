@@ -46,22 +46,22 @@
 
 	'use strict';
 	
-	var _highlightText = __webpack_require__(2);
+	var _highlightText = __webpack_require__(1);
 	
 	var _highlightText2 = _interopRequireDefault(_highlightText);
 	
-	var _randomWords = __webpack_require__(3);
+	var _randomWords = __webpack_require__(2);
 	
 	var _randomWords2 = _interopRequireDefault(_randomWords);
 	
-	var _moveCursor = __webpack_require__(4);
+	var _moveCursor = __webpack_require__(3);
 	
 	var _moveCursor2 = _interopRequireDefault(_moveCursor);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var Timer = __webpack_require__(1);
-	var analyzeWPM = __webpack_require__(5);
+	var analyzeWPM = __webpack_require__(4);
+	var Game = __webpack_require__(5);
 	
 	var pText = document.getElementById('text');
 	var words = (0, _randomWords2.default)(5).join(' ');
@@ -74,35 +74,21 @@
 	var wordsArray = words.split(" ");
 	var laterString = "";
 	var typedWord = "";
-	var time = new Timer(0);
 	var intervalId = void 0;
 	var wpm = new analyzeWPM();
-	
-	var initializeGame = function initializeGame() {
-	  time.timer++;
-	  time.displayTimer();
-	  intervalId = setInterval(time.incrementSeconds.bind(time), 1000);
-	};
-	
-	var gameOver = function gameOver(cursorPos) {
-	  if (cursorPos === wordsArray.length) {
-	    window.clearInterval(intervalId);
-	    modal.style.display = 'block';
-	    wpm.displayResults(time.timer, input.textContent, numWrong, numCorrect);
-	  }
-	};
+	var game = new Game(wordsArray);
 	
 	var input = document.getElementById('user-typing');
 	input.addEventListener('keydown', function (e) {
-	  if (time.timer === 0) {
-	    initializeGame();
+	  if (typedWord === "") {
+	    game.initializeGame();
 	    (0, _highlightText2.default)(cursorPos, wordsArray);
 	  } // starts timer if it's hasn't started already
 	
 	  var alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
 	  var lastWord = typedWord.split(" ")[cursorPos];
 	  var sentenceLength = input.innerHTML.length;
-	  wpm.display(time.timer, input.textContent);
+	  // wpm.display(time.timer, input.textContent);
 	
 	  if (e.keyCode === 32) {
 	    // space
@@ -145,8 +131,9 @@
 	  } else {
 	    e.preventDefault();
 	  }
-	  gameOver(cursorPos);
+	  game.gameOver();
 	});
+	game.gameOver();
 	
 	// const highlightingWords = (word, correctWord) => {
 	//   // let text = input.innerHTML.split(' ');
@@ -188,47 +175,6 @@
 
 	'use strict';
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Timer = function () {
-	  function Timer(time) {
-	    _classCallCheck(this, Timer);
-	
-	    this.timer = time;
-	  }
-	
-	  _createClass(Timer, [{
-	    key: 'displayTimer',
-	    value: function displayTimer() {
-	      var timerDiv = document.getElementById('timer');
-	      var timerSpan = document.createElement('span');
-	      timerSpan.className = 'timer';
-	      timerSpan.innerHTML = this.timer;
-	      var previousTimer = document.getElementsByClassName('timer')[0];
-	      if (previousTimer) timerDiv.removeChild(previousTimer);
-	      timerDiv.appendChild(timerSpan);
-	    }
-	  }, {
-	    key: 'incrementSeconds',
-	    value: function incrementSeconds() {
-	      this.timer++;
-	      this.displayTimer();
-	    }
-	  }]);
-	
-	  return Timer;
-	}();
-	
-	module.exports = Timer;
-
-/***/ },
-/* 2 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
@@ -258,7 +204,7 @@
 	exports.default = highlightCurrentWord;
 
 /***/ },
-/* 3 */
+/* 2 */
 /***/ function(module, exports) {
 
 	var wordList = [
@@ -552,7 +498,7 @@
 
 
 /***/ },
-/* 4 */
+/* 3 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -580,7 +526,7 @@
 	exports.default = moveCursor;
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -652,6 +598,92 @@
 	}();
 	
 	module.exports = analyzeWPM;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Timer = __webpack_require__(6);
+	
+	var Game = function () {
+	  function Game(time, wordsArray) {
+	    _classCallCheck(this, Game);
+	
+	    this.time = new Timer(time);
+	    this.intervalId = null;
+	    this.wordsArray = wordsArray;
+	  }
+	
+	  _createClass(Game, [{
+	    key: 'initializeGame',
+	    value: function initializeGame() {
+	      this.time.incrementSeconds();
+	      this.intervalId = setInterval(this.time.incrementSeconds.bind(this.time), 1000);
+	    }
+	  }, {
+	    key: 'gameOver',
+	    value: function gameOver(position) {
+	      if (this.time.timer >= 5) {
+	        console.log(this.time.timer);
+	        window.clearInterval(this.intervalId);
+	        var modal = document.getElementById('modal');
+	        modal.style.display = 'block';
+	      }
+	    }
+	  }]);
+	
+	  return Game;
+	}();
+	
+	module.exports = Game;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Timer = function () {
+	  function Timer(time) {
+	    _classCallCheck(this, Timer);
+	
+	    this.timer = time;
+	  }
+	
+	  _createClass(Timer, [{
+	    key: 'displayTimer',
+	    value: function displayTimer() {
+	      var timerDiv = document.getElementById('timer');
+	      var timerSpan = document.createElement('span');
+	      timerSpan.className = 'timer';
+	      timerSpan.innerHTML = this.timer;
+	      var previousTimer = document.getElementsByClassName('timer')[0];
+	      if (previousTimer) timerDiv.removeChild(previousTimer);
+	      timerDiv.appendChild(timerSpan);
+	    }
+	  }, {
+	    key: 'incrementSeconds',
+	    value: function incrementSeconds() {
+	      this.timer++;
+	      this.displayTimer();
+	      // console.log(this.timer);
+	    }
+	  }]);
+	
+	  return Timer;
+	}();
+	
+	module.exports = Timer;
 
 /***/ }
 /******/ ]);

@@ -1,5 +1,5 @@
-const Timer = require('./timer');
-const analyzeWPM = require('./calculateWPM');
+const analyzeWPM = require('./analyzeWPM');
+const Game = require('./game');
 
 import highlightCurrentWord from './highlightText';
 import randomWords from 'random-words';
@@ -16,35 +16,21 @@ let numCorrect = 0;
 let wordsArray = words.split(" ");
 let laterString = "";
 let typedWord = "";
-let time = new Timer(0);
 let intervalId;
 let wpm = new analyzeWPM;
-
-const initializeGame = () => {
-  time.timer++;
-  time.displayTimer();
-  intervalId = setInterval(time.incrementSeconds.bind(time), 1000);
-}
-
-const gameOver = cursorPos => {
-  if (cursorPos === wordsArray.length){
-    window.clearInterval(intervalId);
-    modal.style.display = 'block';
-    wpm.displayResults(time.timer, input.textContent, numWrong, numCorrect);
-  }
-}
+const game = new Game(wordsArray);
 
 const input = document.getElementById('user-typing');
 input.addEventListener('keydown', e => {
-  if (time.timer === 0) {
-    initializeGame();
+  if (typedWord === "") {
+    game.initializeGame();
     highlightCurrentWord(cursorPos, wordsArray);
   } // starts timer if it's hasn't started already
 
   const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
   let lastWord = typedWord.split(" ")[cursorPos];
   let sentenceLength = input.innerHTML.length;
-  wpm.display(time.timer, input.textContent);
+  // wpm.display(time.timer, input.textContent);
 
   if (e.keyCode === 32) { // space
     highlightCurrentWord(cursorPos + 1, wordsArray);
@@ -86,8 +72,9 @@ input.addEventListener('keydown', e => {
   } else {
     e.preventDefault();
   }
-  gameOver(cursorPos);
+  game.gameOver();
 });
+game.gameOver();
 
 // const highlightingWords = (word, correctWord) => {
 //   // let text = input.innerHTML.split(' ');
@@ -107,6 +94,7 @@ input.addEventListener('keydown', e => {
 //   }
 //   return highlight;
 // }
+
 
 
 // input.addEventListener('focus', e => {
