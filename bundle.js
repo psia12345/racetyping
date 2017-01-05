@@ -46,10 +46,6 @@
 
 	'use strict';
 	
-	var _timer = __webpack_require__(1);
-	
-	var _timer2 = _interopRequireDefault(_timer);
-	
 	var _highlightText = __webpack_require__(2);
 	
 	var _highlightText2 = _interopRequireDefault(_highlightText);
@@ -62,11 +58,10 @@
 	
 	var _moveCursor2 = _interopRequireDefault(_moveCursor);
 	
-	var _calculateWPM = __webpack_require__(5);
-	
-	var _calculateWPM2 = _interopRequireDefault(_calculateWPM);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var Timer = __webpack_require__(1);
+	var analyzeWPM = __webpack_require__(5);
 	
 	var pText = document.getElementById('text');
 	var words = (0, _randomWords2.default)(5).join(' ');
@@ -77,31 +72,23 @@
 	var numWrong = 0;
 	var numCorrect = 0;
 	var wordsArray = words.split(" ");
-	var time = new _timer2.default(0);
 	var laterString = "";
 	var typedWord = "";
+	var time = new Timer(0);
 	var intervalId = void 0;
+	var wpm = new analyzeWPM();
 	
 	var initializeGame = function initializeGame() {
 	  time.timer++;
 	  time.displayTimer();
-	  console.log((0, _calculateWPM2.default)(time.timer));
-	  intervalId = window.setInterval(incrementSeconds, 1000);
-	};
-	
-	var incrementSeconds = function incrementSeconds() {
-	  var seconds = time.timer++;
-	  time.displayTimer();
-	  console.log(input.textContent);
-	  console.log((0, _calculateWPM2.default)(seconds));
+	  intervalId = setInterval(time.incrementSeconds.bind(time), 1000);
 	};
 	
 	var gameOver = function gameOver(cursorPos) {
 	  if (cursorPos === wordsArray.length) {
 	    window.clearInterval(intervalId);
 	    modal.style.display = 'block';
-	    console.log(input.textContent);
-	    // console.log(calculateWPM(seconds));
+	    wpm.displayResults(time.timer, input.textContent, numWrong, numCorrect);
 	  }
 	};
 	
@@ -115,6 +102,7 @@
 	  var alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
 	  var lastWord = typedWord.split(" ")[cursorPos];
 	  var sentenceLength = input.innerHTML.length;
+	  wpm.display(time.timer, input.textContent);
 	
 	  if (e.keyCode === 32) {
 	    // space
@@ -200,10 +188,6 @@
 
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -227,20 +211,17 @@
 	      timerDiv.appendChild(timerSpan);
 	    }
 	  }, {
-	    key: 'pauseTime',
-	    value: function pauseTime() {
-	      var startButton = document.getElementById('start');
-	      startButton.className = 'start';
-	      startButton.innerHTML = 'Resume';
-	      var input = document.getElementById('user-typing');
-	      input.blur();
+	    key: 'incrementSeconds',
+	    value: function incrementSeconds() {
+	      this.timer++;
+	      this.displayTimer();
 	    }
 	  }]);
 	
 	  return Timer;
 	}();
 	
-	exports.default = Timer;
+	module.exports = Timer;
 
 /***/ },
 /* 2 */
@@ -604,21 +585,73 @@
 
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var typedText = document.getElementById('user-typing').textContent;
-	var charCount = typedText.length;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var calculateWPM = function calculateWPM(timeInSec) {
-	  return Math.floor(charCount / timeInSec * 60);
-	};
-	var adjustedWPM = function adjustedWPM(timeInSec, numWrong) {
-	  return Math.floor(calculateWPM((timeInSec - numWrong) / timeInSec * 60));
-	};
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	exports.default = calculateWPM;
-	// export default adjustedWPM;
+	var analyzeWPM = function () {
+	  function analyzeWPM() {
+	    _classCallCheck(this, analyzeWPM);
+	  }
+	
+	  _createClass(analyzeWPM, [{
+	    key: 'calculateWPM',
+	    value: function calculateWPM(time, text) {
+	      var span = document.createElement('span');
+	      span.textContent = Math.floor(text.length / 5 / time * 60);
+	      span.className = 'number';
+	      return span;
+	    }
+	  }, {
+	    key: 'adjustedWPM',
+	    value: function adjustedWPM(time, text, wrong) {
+	      var span = document.createElement('span');
+	      var wpm = text.length / 5;
+	      wpm = Math.floor((wpm - wrong) / time * 60);
+	      span.textContent = wpm;
+	      span.className = 'number';
+	      return span;
+	    }
+	    // accuracy(wrong, correct){
+	    //   debugger;
+	    //   const span = document.createElement('span');
+	    //   let total = correct + wrong;
+	    //   span.textContent = Math.floor((correct - wrong) / total * 100) + " %";
+	    //   span.className = 'number';
+	    //   return span;
+	    // }
+	
+	  }, {
+	    key: 'charInMin',
+	    value: function charInMin(time, text) {
+	      var span = document.createElement('span');
+	      span.textContent = Math.floor(text.length / time * 60);
+	      span.className = 'number';
+	      return span;
+	    }
+	  }, {
+	    key: 'display',
+	    value: function display(time, text) {
+	      var wpmDiv = document.getElementById('wpm');
+	      var span = document.getElementsByClassName('number')[0];
+	      if (typeof span !== 'undefined') wpmDiv.removeChild(span);
+	      wpmDiv.appendChild(this.calculateWPM(time, text));
+	    }
+	  }, {
+	    key: 'displayResults',
+	    value: function displayResults(time, text, wrong, actualText) {
+	      var resultDivs = document.getElementsByClassName('result');
+	      resultDivs[0].appendChild(this.calculateWPM(time, text));
+	      resultDivs[1].appendChild(this.adjustedWPM(time, text, wrong));
+	      resultDivs[2].appendChild(this.charInMin(time, text));
+	      // resultDivs[2].appendChild(this.accuracy(typedtext, actualText));
+	    }
+	  }]);
+	
+	  return analyzeWPM;
+	}();
+	
+	module.exports = analyzeWPM;
 
 /***/ }
 /******/ ]);

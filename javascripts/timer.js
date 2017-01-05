@@ -11,12 +11,9 @@ class Timer{
     if ( previousTimer ) timerDiv.removeChild(previousTimer);
     timerDiv.appendChild(timerSpan);
   }
-  pauseTime(){
-    const startButton = document.getElementById('start');
-    startButton.className = 'start';
-    startButton.innerHTML = 'Resume';
-    const input = document.getElementById('user-typing');
-    input.blur();
+  incrementSeconds(){
+    this.timer++;
+    this.displayTimer();
   }
 }
-export default Timer;
+module.exports = Timer;
