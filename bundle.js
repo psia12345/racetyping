@@ -50,124 +50,21 @@
 	
 	var _highlightText2 = _interopRequireDefault(_highlightText);
 	
-	var _randomWords = __webpack_require__(2);
-	
-	var _randomWords2 = _interopRequireDefault(_randomWords);
-	
-	var _moveCursor = __webpack_require__(3);
-	
-	var _moveCursor2 = _interopRequireDefault(_moveCursor);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var analyzeWPM = __webpack_require__(4);
-	var Game = __webpack_require__(5);
+	var Game = __webpack_require__(2);
 	
-	var pText = document.getElementById('text');
-	var words = (0, _randomWords2.default)(5).join(' ');
-	pText.textContent = words;
-	var modal = document.getElementById('modal');
+	var analyzeWPM = __webpack_require__(5);
+	var Typing = __webpack_require__(6);
 	
-	var cursorPos = 0;
-	var numWrong = 0;
-	var numCorrect = 0;
-	var wordsArray = words.split(" ");
-	var laterString = "";
-	var typedWord = "";
-	var intervalId = void 0;
-	var wpm = new analyzeWPM();
-	var game = new Game(wordsArray);
-	
-	var input = document.getElementById('user-typing');
-	input.addEventListener('keydown', function (e) {
-	  if (typedWord === "") {
-	    game.initializeGame();
-	    (0, _highlightText2.default)(cursorPos, wordsArray);
-	  } // starts timer if it's hasn't started already
-	
-	  var alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
-	  var lastWord = typedWord.split(" ")[cursorPos];
-	  var sentenceLength = input.innerHTML.length;
-	  // wpm.display(time.timer, input.textContent);
-	
-	  if (e.keyCode === 32) {
-	    // space
-	    (0, _highlightText2.default)(cursorPos + 1, wordsArray);
-	    input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length);
-	    typedWord += " "; // add space
-	    if (wordsArray[cursorPos] === lastWord) {
-	      numCorrect++;
-	      input.innerHTML += '<font color="gray">' + lastWord + '</font>';
-	    } else {
-	      numWrong++;
-	      input.innerHTML += '<font color="red">' + lastWord + '</font>';
-	    }
-	    (0, _moveCursor2.default)(input);
-	    cursorPos++;
-	    document.execCommand('forecolor', false, '000000');
-	  } else if (e.keyCode === 8) {
-	    // backspace
-	    var lastChar = typedWord[typedWord.length - 1];
-	    var typedSentence = typedWord.split(' '); //input.textContent.trim().split(" ");
-	    var wordCount = typedSentence.length;
-	    if (lastChar === " " && typedSentence[wordCount - 2] === wordsArray[cursorPos - 1]) {
-	      numCorrect--;
-	      cursorPos--;
-	      typedWord = typedWord.slice(0, typedWord.length - 1);
-	    } else if (lastChar === " " && typedSentence[wordCount - 2] !== wordsArray[cursorPos - 1]) {
-	      numWrong--;
-	      cursorPos--;
-	      typedWord = typedWord.slice(0, typedWord.length - 1);
-	    } else if (lastChar === " ") {
-	      cursorPos--;
-	      typedWord = typedWord.slice(0, typedWord.length - 1);
-	    } else {
-	      typedWord = typedWord.slice(0, typedWord.length - 1);
-	    }
-	    (0, _highlightText2.default)(cursorPos, wordsArray);
-	    // missing some sort of input.innerHTML slice method to account for bug
-	  } else if (alphabet.includes(e.key.toLowerCase())) {
-	    typedWord += e.key;
-	  } else {
-	    e.preventDefault();
-	  }
-	  game.gameOver();
+	document.addEventListener("DOMContentLoaded", function () {
+	    var game = new Game(5);
+	    var wpm = new analyzeWPM();
+	    game.initializeGame(10);
+	    var wordsArray = game.wordsArray;
+	    (0, _highlightText2.default)(0, wordsArray);
+	    new Typing(game);
 	});
-	game.gameOver();
-	
-	// const highlightingWords = (word, correctWord) => {
-	//   // let text = input.innerHTML.split(' ');
-	//   // let textContent = text.splice(0, text.length - 1).join(' ');
-	//   // debugger;
-	//   // input.value = "";
-	//   // input.textContent = input.textContent.replace(word, "");
-	//   // input.innerHTML = "";
-	//   let highlight;
-	//   if (word === correctWord){
-	//     highlight = word;
-	//   } else {
-	//     // highlight = document.createElement('span');
-	//     // highlight.textContent = word + " ";
-	//     // highlight.className = 'incorrect-highlight';
-	//     highlight = `<i>${word}</i>`;
-	//   }
-	//   return highlight;
-	// }
-	
-	
-	// input.addEventListener('focus', e => {
-	//   if (laterString === "") {
-	//     laterString = pText.innerHTML.slice(cursorPos, numLetters);
-	//     initializeGame();
-	//   }
-	//   pText.innerHTML = pText.innerHTML.replace(laterString, "");
-	//   const span = document.createElement('span');
-	//   span.innerHTML = laterString[0];
-	//   span.className = "highlight";
-	//   pText.appendChild(span);
-	//   let stringToAppend = laterString.replace(laterString[0], ""); ;
-	//   pText.appendChild(document.createTextNode(stringToAppend));
-	// })
 
 /***/ },
 /* 1 */
@@ -205,6 +102,65 @@
 
 /***/ },
 /* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _randomWords = __webpack_require__(3);
+	
+	var _randomWords2 = _interopRequireDefault(_randomWords);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Timer = __webpack_require__(4);
+	
+	var Game = function () {
+	  function Game(time) {
+	    _classCallCheck(this, Game);
+	
+	    this.time = new Timer(time);
+	    this.intervalId = null;
+	    this.wordsArray = [];
+	  }
+	
+	  _createClass(Game, [{
+	    key: 'initializeGame',
+	    value: function initializeGame(words) {
+	      this.time.decrementSeconds();
+	      this.generateWords(words);
+	      this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
+	    }
+	  }, {
+	    key: 'gameOver',
+	    value: function gameOver(time) {
+	      time = time || this.time.timer;
+	      if (time === 0) {
+	        window.clearInterval(this.intervalId);
+	        var modal = document.getElementById('modal');
+	        modal.style.display = 'block';
+	      }
+	    }
+	  }, {
+	    key: 'generateWords',
+	    value: function generateWords(n) {
+	      var words = (0, _randomWords2.default)(n).join(' ');
+	      this.wordsArray = this.wordsArray.concat(words.split(' '));
+	      var textDiv = document.getElementById('text');
+	      textDiv.textContent += words;
+	    }
+	  }]);
+	
+	  return Game;
+	}();
+	
+	module.exports = Game;
+
+/***/ },
+/* 3 */
 /***/ function(module, exports) {
 
 	var wordList = [
@@ -498,35 +454,49 @@
 
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var moveCursor = function moveCursor(el) {
-	    el.focus();
-	    if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
-	        var range = document.createRange();
-	        range.selectNodeContents(el);
-	        range.collapse(false);
-	        var sel = window.getSelection();
-	        sel.removeAllRanges();
-	        sel.addRange(range);
-	    } else if (typeof document.body.createTextRange != "undefined") {
-	        var textRange = document.body.createTextRange();
-	        textRange.moveToElementText(el);
-	        textRange.collapse(false);
-	        textRange.select();
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Timer = function () {
+	  function Timer(time) {
+	    _classCallCheck(this, Timer);
+	
+	    this.timer = time;
+	  }
+	
+	  _createClass(Timer, [{
+	    key: 'displayTimer',
+	    value: function displayTimer() {
+	      var timerDiv = document.getElementById('timer');
+	      var timerSpan = document.createElement('span');
+	      timerSpan.className = 'timer';
+	      timerSpan.innerHTML = this.timer;
+	      var previousTimer = document.getElementsByClassName('timer')[0];
+	      if (previousTimer) timerDiv.removeChild(previousTimer);
+	      timerDiv.appendChild(timerSpan);
 	    }
-	};
+	  }, {
+	    key: 'decrementSeconds',
+	    value: function decrementSeconds() {
+	      // console.log(this.timer);
+	      this.timer--;
+	      this.displayTimer();
+	    }
+	  }]);
 	
-	exports.default = moveCursor;
+	  return Timer;
+	}();
+	
+	module.exports = Timer;
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -600,90 +570,133 @@
 	module.exports = analyzeWPM;
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	var _highlightText = __webpack_require__(1);
+	
+	var _highlightText2 = _interopRequireDefault(_highlightText);
+	
+	var _moveCursor = __webpack_require__(7);
+	
+	var _moveCursor2 = _interopRequireDefault(_moveCursor);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var Timer = __webpack_require__(6);
+	var Typing = function () {
+	  function Typing(game) {
+	    _classCallCheck(this, Typing);
 	
-	var Game = function () {
-	  function Game(time, wordsArray) {
-	    _classCallCheck(this, Game);
+	    this.typedWord = "";
+	    this.cursorPos = 0;
+	    this.wordsArray = game.wordsArray;
+	    this.numCorrect = 0;
+	    this.numWrong = 0;
+	    this.game = game;
 	
-	    this.time = new Timer(time);
-	    this.intervalId = null;
-	    this.wordsArray = wordsArray;
+	    document.addEventListener('keydown', this.handleKeyEvent.bind(this));
 	  }
 	
-	  _createClass(Game, [{
-	    key: 'initializeGame',
-	    value: function initializeGame() {
-	      this.time.incrementSeconds();
-	      this.intervalId = setInterval(this.time.incrementSeconds.bind(this.time), 1000);
-	    }
-	  }, {
-	    key: 'gameOver',
-	    value: function gameOver(position) {
-	      if (this.time.timer >= 5) {
-	        console.log(this.time.timer);
-	        window.clearInterval(this.intervalId);
-	        var modal = document.getElementById('modal');
-	        modal.style.display = 'block';
+	  _createClass(Typing, [{
+	    key: 'handleKeyEvent',
+	    value: function handleKeyEvent(e) {
+	      var alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
+	      var input = document.getElementById('user-typing');
+	      var lastWord = this.typedWord.split(" ")[this.cursorPos];
+	      var sentenceLength = input.innerHTML.length;
+	      // console.log("before space", input.innerHTML)
+	      if (e.keyCode === 32) {
+	        // space
+	        (0, _highlightText2.default)(this.cursorPos + 1, this.wordsArray);
+	        input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length);
+	        this.typedWord += " "; // add space
+	        // console.log("before replacing", input.innerHTML)
+	        var elToRemove = input.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g);
+	        if (elToRemove) {
+	          elToRemove = elToRemove[0];
+	        }
+	        input.innerHTML = input.innerHTML.replace(elToRemove, "");
+	        console.log(input.innerHTML);
+	        if (this.wordsArray[this.cursorPos] === lastWord) {
+	          this.numCorrect++;
+	          console.log("after adding correct", input.innerHTML);
+	          input.innerHTML += '<font color="gray">' + lastWord + '</font>';
+	        } else {
+	          this.numWrong++;
+	          input.innerHTML += '<font color="red">' + lastWord + '</font>';
+	          console.log("after adding incorrect", input.innerHTML);
+	        }
+	        (0, _moveCursor2.default)(input);
+	        this.cursorPos++;
+	        document.execCommand('forecolor', false, '000000');
+	      } else if (e.keyCode === 8) {
+	        // backspace
+	        var lastChar = this.typedWord[this.typedWord.length - 1];
+	        var typedSentence = this.typedWord.split(' '); //input.textContent.trim().split(" ");
+	        var wordCount = typedSentence.length;
+	        if (lastChar === " " && typedSentence[wordCount - 2] === this.wordsArray[this.cursorPos - 1]) {
+	          this.numCorrect--;
+	          this.cursorPos--;
+	          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	        } else if (lastChar === " " && typedSentence[wordCount - 2] !== this.wordsArray[this.cursorPos - 1]) {
+	          this.numWrong--;
+	          this.cursorPos--;
+	          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	        } else if (lastChar === " ") {
+	          this.cursorPos--;
+	          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	        } else {
+	          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	        }
+	        console.log("backspace", input.innerHTML);
+	        (0, _highlightText2.default)(this.cursorPos, this.wordsArray);
+	        // missing some sort of input.innerHTML slice method to account for bug
+	      } else if (alphabet.includes(e.key.toLowerCase())) {
+	        this.typedWord += e.key;
+	      } else {
+	        e.preventDefault();
 	      }
 	    }
 	  }]);
 	
-	  return Game;
+	  return Typing;
 	}();
 	
-	module.exports = Game;
+	module.exports = Typing;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Timer = function () {
-	  function Timer(time) {
-	    _classCallCheck(this, Timer);
-	
-	    this.timer = time;
-	  }
-	
-	  _createClass(Timer, [{
-	    key: 'displayTimer',
-	    value: function displayTimer() {
-	      var timerDiv = document.getElementById('timer');
-	      var timerSpan = document.createElement('span');
-	      timerSpan.className = 'timer';
-	      timerSpan.innerHTML = this.timer;
-	      var previousTimer = document.getElementsByClassName('timer')[0];
-	      if (previousTimer) timerDiv.removeChild(previousTimer);
-	      timerDiv.appendChild(timerSpan);
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var moveCursor = function moveCursor(el) {
+	    el.focus();
+	    if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
+	        var range = document.createRange();
+	        range.selectNodeContents(el);
+	        range.collapse(false);
+	        var sel = window.getSelection();
+	        sel.removeAllRanges();
+	        sel.addRange(range);
+	    } else if (typeof document.body.createTextRange != "undefined") {
+	        var textRange = document.body.createTextRange();
+	        textRange.moveToElementText(el);
+	        textRange.collapse(false);
+	        textRange.select();
 	    }
-	  }, {
-	    key: 'incrementSeconds',
-	    value: function incrementSeconds() {
-	      this.timer++;
-	      this.displayTimer();
-	      // console.log(this.timer);
-	    }
-	  }]);
+	};
 	
-	  return Timer;
-	}();
-	
-	module.exports = Timer;
+	exports.default = moveCursor;
 
 /***/ }
 /******/ ]);

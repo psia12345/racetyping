@@ -7,7 +7,7 @@ const highlightCurrentWord = (position, wordsArray) => {
   if (typeof wordsArray[position] !== 'undefined') {
     currentWord.textContent = wordsArray[position] + " ";
   } else {
-    currentWord.textContent = ""; 
+    currentWord.textContent = "";
   }
   const highlightedElement = document.getElementsByClassName("highlight")[0];
 

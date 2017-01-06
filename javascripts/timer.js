@@ -11,10 +11,10 @@ class Timer{
     if ( previousTimer ) timerDiv.removeChild(previousTimer);
     timerDiv.appendChild(timerSpan);
   }
-  incrementSeconds(){
-    this.timer++;
-    this.displayTimer();
+  decrementSeconds(){
     // console.log(this.timer);
+    this.timer--;
+    this.displayTimer();
   }
 }
 module.exports = Timer;
