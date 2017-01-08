@@ -1,16 +1,20 @@
 class analyzeWPM {
   calculateWPM(time, text) {
     const span = document.createElement('span');
-    span.textContent = Math.floor(text.length / 5 / time * 60);
-    span.className = 'number';
+    let currentTimeLeft = time.timer;
+    let totalTime = time.initialTime;
+    span.textContent = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60);
+    span.className = 'wpm';
     return span;
   }
   adjustedWPM(time, text, wrong){
+    debugger;
     const span = document.createElement('span');
     let wpm = text.length / 5 ;
-    wpm = Math.floor((wpm - wrong) / time * 60 );
+    let totalTime = time.initialTime;
+    wpm = Math.floor((wpm - wrong) / totalTime * 60 );
     span.textContent = wpm;
-    span.className = 'number';
+    span.className = 'wpm';
     return span;
   }
   // accuracy(wrong, correct){
@@ -23,13 +27,14 @@ class analyzeWPM {
   // }
   charInMin(time, text){
     const span = document.createElement('span');
-    span.textContent = Math.floor( text.length / time * 60);
+    let totalTime = time.initialTime;
+    span.textContent = Math.floor( text.length / totalTime * 60);
     span.className = 'number';
     return span;
   }
   display(time, text){
     const wpmDiv = document.getElementById('wpm');
-    let span = document.getElementsByClassName('number')[0];
+    let span = document.getElementsByClassName('wpm')[1];
     if (typeof span !== 'undefined' ) wpmDiv.removeChild(span);
     wpmDiv.appendChild(this.calculateWPM(time, text));
   }

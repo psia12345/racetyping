@@ -14,7 +14,7 @@ let animationId;
 
 const moveCars = (redPos, redVel, greenPos, greenVel) => {
   ctx.clearRect(0, 0, WIDTH, 350);
-  ctx.drawImage(racetrack, 0, 0);
+  ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
   ctx.drawImage(redcar, redPos, 50, 110, 65);
   redPos += redVel;
   ctx.drawImage(greencar, greenPos, 200, 110, 65);
@@ -23,11 +23,12 @@ const moveCars = (redPos, redVel, greenPos, greenVel) => {
     moveCars(redPos, redVel, greenPos, greenVel);
   })
 }
-//to move cars
-// requestAnimationFrame(function(){
-//   moveCars(0, 3, 0, 1);
-// })
+// to move cars
+requestAnimationFrame(function(){
+  moveCars(0, 1200/300, 0, 1);
+})
 
 const stopCar = () => {
   cancelAnimationFrame(animationId);
 }
+setTimeout(stopCar, 5000);

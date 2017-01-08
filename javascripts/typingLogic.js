@@ -2,13 +2,17 @@ import highlightCurrentWord from './highlightText';
 import moveCursor from './moveCursor';
 
 class Typing{
-  constructor(game){
+  constructor(game, ctx, wpm){
     this.typedWord = "";
     this.cursorPos = 0;
     this.wordsArray = game.wordsArray;
     this.numCorrect = 0;
     this.numWrong = 0;
     this.game = game;
+    this.ctx = ctx;
+    this.wpm = wpm;
+    this.animationId = null;
+    this.time = game.time;
 
     document.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
@@ -17,8 +21,10 @@ class Typing{
     const input = document.getElementById('user-typing');
     let lastWord = this.typedWord.split(" ")[this.cursorPos];
     let sentenceLength = input.innerHTML.length;
+    this.wordsArray = this.game.wordsArray;
     // console.log("before space", input.innerHTML)
     if (e.keyCode === 32) { // space
+      // debugger;
       highlightCurrentWord(this.cursorPos + 1, this.wordsArray);
       input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length)
       this.typedWord += " "; // add space
@@ -26,15 +32,15 @@ class Typing{
       let elToRemove = input.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g)
       if (elToRemove){ elToRemove = elToRemove[0] }
       input.innerHTML = input.innerHTML.replace(elToRemove, "");
-      console.log(input.innerHTML)
+      // console.log(input.innerHTML)
       if (this.wordsArray[this.cursorPos] === lastWord){
         this.numCorrect++;
-        console.log("after adding correct", input.innerHTML)
+        // console.log("after adding correct", input.innerHTML)
         input.innerHTML += `<font color="gray">${lastWord}</font>`;
       } else {
         this.numWrong++;
         input.innerHTML += `<font color="red">${lastWord}</font>`;
-        console.log("after adding incorrect", input.innerHTML)
+        // console.log("after adding incorrect", input.innerHTML)
       }
       moveCursor(input);
       this.cursorPos++;
@@ -64,8 +70,18 @@ class Typing{
       this.typedWord += e.key;
     } else {
       e.preventDefault();
+      cancelAnimationFrame(this.animationId);
     }
+
+    this.wpm.display(this.time, this.typedWord);
+    // let x = this
+    // requestAnimationFrame(function(x){
+    //   console.log(x);
+    //   x.moveCars(0, 1200/300, 0, 1);
+    // })
+    this.game.gameOver(this.time.timer, this.numWrong);
   }
+
 
 }
 module.exports = Typing;

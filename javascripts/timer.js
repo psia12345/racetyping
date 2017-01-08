@@ -1,19 +1,17 @@
 class Timer{
   constructor(time){
     this.timer = time;
+    this.initialTime = time;
+    this.width = 100;
   }
   displayTimer(){
-    const timerDiv = document.getElementById('timer');
-    const timerSpan = document.createElement('span');
-    timerSpan.className = 'timer';
-    timerSpan.innerHTML = this.timer;
-    let previousTimer = document.getElementsByClassName('timer')[0];
-    if ( previousTimer ) timerDiv.removeChild(previousTimer);
-    timerDiv.appendChild(timerSpan);
+    const bar = document.getElementById('bar');
+    bar.style.width = this.width + '%';
   }
   decrementSeconds(){
-    // console.log(this.timer);
+    const decrementFactor = Math.floor(100/ this.initialTime);
     this.timer--;
+    this.width-= decrementFactor;
     this.displayTimer();
   }
 }

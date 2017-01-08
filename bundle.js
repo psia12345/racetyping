@@ -56,14 +56,19 @@
 	
 	var analyzeWPM = __webpack_require__(5);
 	var Typing = __webpack_require__(6);
+	var divCanvasContainer = document.getElementById('canvas-container');
+	var canvas = document.getElementById('canvas');
+	var WIDTH = window.innerWidth;
+	canvas.width = WIDTH;
+	var ctx = canvas.getContext('2d');
 	
 	document.addEventListener("DOMContentLoaded", function () {
-	    var game = new Game(5);
 	    var wpm = new analyzeWPM();
-	    game.initializeGame(10);
+	    var game = new Game(100, ctx, wpm);
+	    game.initializeGame(1);
 	    var wordsArray = game.wordsArray;
 	    (0, _highlightText2.default)(0, wordsArray);
-	    new Typing(game);
+	    var typing = new Typing(game, ctx, wpm);
 	});
 
 /***/ },
@@ -119,12 +124,15 @@
 	var Timer = __webpack_require__(4);
 	
 	var Game = function () {
-	  function Game(time) {
+	  function Game(time, ctx, wpm) {
 	    _classCallCheck(this, Game);
 	
 	    this.time = new Timer(time);
 	    this.intervalId = null;
 	    this.wordsArray = [];
+	    this.ctx = ctx;
+	    this.wpm = wpm;
+	    // this.typingLogic =
 	  }
 	
 	  _createClass(Game, [{
@@ -133,15 +141,28 @@
 	      this.time.decrementSeconds();
 	      this.generateWords(words);
 	      this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
+	      var racetrack = document.getElementById('racetrack');
+	      var redcar = document.getElementById('redcar');
+	      var greencar = document.getElementById('greencar');
+	      var WIDTH = window.innerWidth;
+	      this.ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
+	      this.ctx.drawImage(redcar, 10, 50, 110, 65);
+	      this.ctx.drawImage(greencar, 10, 200, 110, 65);
 	    }
 	  }, {
 	    key: 'gameOver',
-	    value: function gameOver(time) {
+	    value: function gameOver(time, numWrong) {
 	      time = time || this.time.timer;
-	      if (time === 0) {
+	      var inputDiv = document.getElementById('user-typing');
+	      var typedWord = inputDiv.textContent;
+	      if (time <= 0) {
 	        window.clearInterval(this.intervalId);
 	        var modal = document.getElementById('modal');
 	        modal.style.display = 'block';
+	        this.wpm.displayResults(this.time, typedWord, numWrong);
+	        inputDiv.blur();
+	      } else {
+	        this.generateWords(1);
 	      }
 	    }
 	  }, {
@@ -150,7 +171,20 @@
 	      var words = (0, _randomWords2.default)(n).join(' ');
 	      this.wordsArray = this.wordsArray.concat(words.split(' '));
 	      var textDiv = document.getElementById('text');
-	      textDiv.textContent += words;
+	      textDiv.textContent += words + ' ';
+	    }
+	  }, {
+	    key: 'moveCars',
+	    value: function moveCars(redPos, redVel, greenPos, greenVel) {
+	      this.ctx.clearRect(0, 0, WIDTH, 350);
+	      this.ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
+	      this.ctx.drawImage(redcar, redPos, 50, 110, 65);
+	      redPos += redVel;
+	      this.ctx.drawImage(greencar, greenPos, 200, 110, 65);
+	      greenPos += greenVel;
+	      this.animationId = requestAnimationFrame(function () {
+	        this.moveCars(redPos, redVel, greenPos, greenVel);
+	      });
 	    }
 	  }]);
 	
@@ -468,24 +502,22 @@
 	    _classCallCheck(this, Timer);
 	
 	    this.timer = time;
+	    this.initialTime = time;
+	    this.width = 100;
 	  }
 	
 	  _createClass(Timer, [{
 	    key: 'displayTimer',
 	    value: function displayTimer() {
-	      var timerDiv = document.getElementById('timer');
-	      var timerSpan = document.createElement('span');
-	      timerSpan.className = 'timer';
-	      timerSpan.innerHTML = this.timer;
-	      var previousTimer = document.getElementsByClassName('timer')[0];
-	      if (previousTimer) timerDiv.removeChild(previousTimer);
-	      timerDiv.appendChild(timerSpan);
+	      var bar = document.getElementById('bar');
+	      bar.style.width = this.width + '%';
 	    }
 	  }, {
 	    key: 'decrementSeconds',
 	    value: function decrementSeconds() {
-	      // console.log(this.timer);
+	      var decrementFactor = Math.floor(100 / this.initialTime);
 	      this.timer--;
+	      this.width -= decrementFactor;
 	      this.displayTimer();
 	    }
 	  }]);
@@ -514,18 +546,22 @@
 	    key: 'calculateWPM',
 	    value: function calculateWPM(time, text) {
 	      var span = document.createElement('span');
-	      span.textContent = Math.floor(text.length / 5 / time * 60);
-	      span.className = 'number';
+	      var currentTimeLeft = time.timer;
+	      var totalTime = time.initialTime;
+	      span.textContent = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60);
+	      span.className = 'wpm';
 	      return span;
 	    }
 	  }, {
 	    key: 'adjustedWPM',
 	    value: function adjustedWPM(time, text, wrong) {
+	      debugger;
 	      var span = document.createElement('span');
 	      var wpm = text.length / 5;
-	      wpm = Math.floor((wpm - wrong) / time * 60);
+	      var totalTime = time.initialTime;
+	      wpm = Math.floor((wpm - wrong) / totalTime * 60);
 	      span.textContent = wpm;
-	      span.className = 'number';
+	      span.className = 'wpm';
 	      return span;
 	    }
 	    // accuracy(wrong, correct){
@@ -541,7 +577,8 @@
 	    key: 'charInMin',
 	    value: function charInMin(time, text) {
 	      var span = document.createElement('span');
-	      span.textContent = Math.floor(text.length / time * 60);
+	      var totalTime = time.initialTime;
+	      span.textContent = Math.floor(text.length / totalTime * 60);
 	      span.className = 'number';
 	      return span;
 	    }
@@ -549,7 +586,7 @@
 	    key: 'display',
 	    value: function display(time, text) {
 	      var wpmDiv = document.getElementById('wpm');
-	      var span = document.getElementsByClassName('number')[0];
+	      var span = document.getElementsByClassName('wpm')[1];
 	      if (typeof span !== 'undefined') wpmDiv.removeChild(span);
 	      wpmDiv.appendChild(this.calculateWPM(time, text));
 	    }
@@ -590,7 +627,7 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Typing = function () {
-	  function Typing(game) {
+	  function Typing(game, ctx, wpm) {
 	    _classCallCheck(this, Typing);
 	
 	    this.typedWord = "";
@@ -599,6 +636,10 @@
 	    this.numCorrect = 0;
 	    this.numWrong = 0;
 	    this.game = game;
+	    this.ctx = ctx;
+	    this.wpm = wpm;
+	    this.animationId = null;
+	    this.time = game.time;
 	
 	    document.addEventListener('keydown', this.handleKeyEvent.bind(this));
 	  }
@@ -610,9 +651,11 @@
 	      var input = document.getElementById('user-typing');
 	      var lastWord = this.typedWord.split(" ")[this.cursorPos];
 	      var sentenceLength = input.innerHTML.length;
+	      this.wordsArray = this.game.wordsArray;
 	      // console.log("before space", input.innerHTML)
 	      if (e.keyCode === 32) {
 	        // space
+	        // debugger;
 	        (0, _highlightText2.default)(this.cursorPos + 1, this.wordsArray);
 	        input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length);
 	        this.typedWord += " "; // add space
@@ -622,15 +665,15 @@
 	          elToRemove = elToRemove[0];
 	        }
 	        input.innerHTML = input.innerHTML.replace(elToRemove, "");
-	        console.log(input.innerHTML);
+	        // console.log(input.innerHTML)
 	        if (this.wordsArray[this.cursorPos] === lastWord) {
 	          this.numCorrect++;
-	          console.log("after adding correct", input.innerHTML);
+	          // console.log("after adding correct", input.innerHTML)
 	          input.innerHTML += '<font color="gray">' + lastWord + '</font>';
 	        } else {
 	          this.numWrong++;
 	          input.innerHTML += '<font color="red">' + lastWord + '</font>';
-	          console.log("after adding incorrect", input.innerHTML);
+	          // console.log("after adding incorrect", input.innerHTML)
 	        }
 	        (0, _moveCursor2.default)(input);
 	        this.cursorPos++;
@@ -661,7 +704,16 @@
 	        this.typedWord += e.key;
 	      } else {
 	        e.preventDefault();
+	        cancelAnimationFrame(this.animationId);
 	      }
+	
+	      this.wpm.display(this.time, this.typedWord);
+	      // let x = this
+	      // requestAnimationFrame(function(x){
+	      //   console.log(x);
+	      //   x.moveCars(0, 1200/300, 0, 1);
+	      // })
+	      this.game.gameOver(this.time.timer, this.numWrong);
 	    }
 	  }]);
 	
