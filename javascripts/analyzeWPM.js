@@ -8,11 +8,11 @@ class analyzeWPM {
     return span;
   }
   adjustedWPM(time, text, wrong){
-    debugger;
     const span = document.createElement('span');
     let wpm = text.length / 5 ;
     let totalTime = time.initialTime;
     wpm = Math.floor((wpm - wrong) / totalTime * 60 );
+    if ( wpm < 0 ){ wpm = 0 }
     span.textContent = wpm;
     span.className = 'wpm';
     return span;

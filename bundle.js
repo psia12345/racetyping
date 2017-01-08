@@ -54,8 +54,7 @@
 	
 	var Game = __webpack_require__(2);
 	
-	var analyzeWPM = __webpack_require__(5);
-	var Typing = __webpack_require__(6);
+	var analyzeWPM = __webpack_require__(7);
 	var divCanvasContainer = document.getElementById('canvas-container');
 	var canvas = document.getElementById('canvas');
 	var WIDTH = window.innerWidth;
@@ -64,11 +63,10 @@
 	
 	document.addEventListener("DOMContentLoaded", function () {
 	    var wpm = new analyzeWPM();
-	    var game = new Game(100, ctx, wpm);
-	    game.initializeGame(1);
+	    var game = new Game(5, ctx, wpm);
+	    game.initializeGame(10);
 	    var wordsArray = game.wordsArray;
 	    (0, _highlightText2.default)(0, wordsArray);
-	    var typing = new Typing(game, ctx, wpm);
 	});
 
 /***/ },
@@ -123,24 +121,27 @@
 	
 	var Timer = __webpack_require__(4);
 	
+	var Typing = __webpack_require__(5);
+	
 	var Game = function () {
 	  function Game(time, ctx, wpm) {
 	    _classCallCheck(this, Game);
 	
-	    this.time = new Timer(time);
+	    this.time = new Timer(time, this);
 	    this.intervalId = null;
 	    this.wordsArray = [];
 	    this.ctx = ctx;
 	    this.wpm = wpm;
-	    // this.typingLogic =
+	    this.typing = new Typing(this, this.ctx, this.wpm);
 	  }
 	
 	  _createClass(Game, [{
 	    key: 'initializeGame',
 	    value: function initializeGame(words) {
-	      this.time.decrementSeconds();
+	      var inputDiv = document.getElementById('user-typing');
+	      inputDiv.contentEditable = true;
+	      inputDiv.focus();
 	      this.generateWords(words);
-	      this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
 	      var racetrack = document.getElementById('racetrack');
 	      var redcar = document.getElementById('redcar');
 	      var greencar = document.getElementById('greencar');
@@ -150,19 +151,28 @@
 	      this.ctx.drawImage(greencar, 10, 200, 110, 65);
 	    }
 	  }, {
+	    key: 'startCountingTime',
+	    value: function startCountingTime() {
+	      this.time.decrementSeconds(this, this.typing.numWrong);
+	      this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time, this), 1000);
+	    }
+	  }, {
 	    key: 'gameOver',
 	    value: function gameOver(time, numWrong) {
 	      time = time || this.time.timer;
 	      var inputDiv = document.getElementById('user-typing');
 	      var typedWord = inputDiv.textContent;
-	      if (time <= 0) {
+	      if (time === 0) {
+	        // debugger;
+	        inputDiv.contentEditable = false;
 	        window.clearInterval(this.intervalId);
+	        inputDiv.blur();
 	        var modal = document.getElementById('modal');
 	        modal.style.display = 'block';
 	        this.wpm.displayResults(this.time, typedWord, numWrong);
-	        inputDiv.blur();
 	      } else {
 	        this.generateWords(1);
+	        return false;
 	      }
 	    }
 	  }, {
@@ -171,7 +181,7 @@
 	      var words = (0, _randomWords2.default)(n).join(' ');
 	      this.wordsArray = this.wordsArray.concat(words.split(' '));
 	      var textDiv = document.getElementById('text');
-	      textDiv.textContent += words + ' ';
+	      textDiv.innerHTML += words + ' ';
 	    }
 	  }, {
 	    key: 'moveCars',
@@ -498,12 +508,13 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Timer = function () {
-	  function Timer(time) {
+	  function Timer(time, game) {
 	    _classCallCheck(this, Timer);
 	
 	    this.timer = time;
 	    this.initialTime = time;
 	    this.width = 100;
+	    this.game = game;
 	  }
 	
 	  _createClass(Timer, [{
@@ -514,11 +525,15 @@
 	    }
 	  }, {
 	    key: 'decrementSeconds',
-	    value: function decrementSeconds() {
+	    value: function decrementSeconds(game, numWrong) {
 	      var decrementFactor = Math.floor(100 / this.initialTime);
 	      this.timer--;
 	      this.width -= decrementFactor;
 	      this.displayTimer();
+	      if (this.timer === 0) {
+	        this.game.gameOver(this.timer, game.typing.numWrong);
+	        return true;
+	      }
 	    }
 	  }]);
 	
@@ -529,85 +544,6 @@
 
 /***/ },
 /* 5 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var analyzeWPM = function () {
-	  function analyzeWPM() {
-	    _classCallCheck(this, analyzeWPM);
-	  }
-	
-	  _createClass(analyzeWPM, [{
-	    key: 'calculateWPM',
-	    value: function calculateWPM(time, text) {
-	      var span = document.createElement('span');
-	      var currentTimeLeft = time.timer;
-	      var totalTime = time.initialTime;
-	      span.textContent = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60);
-	      span.className = 'wpm';
-	      return span;
-	    }
-	  }, {
-	    key: 'adjustedWPM',
-	    value: function adjustedWPM(time, text, wrong) {
-	      debugger;
-	      var span = document.createElement('span');
-	      var wpm = text.length / 5;
-	      var totalTime = time.initialTime;
-	      wpm = Math.floor((wpm - wrong) / totalTime * 60);
-	      span.textContent = wpm;
-	      span.className = 'wpm';
-	      return span;
-	    }
-	    // accuracy(wrong, correct){
-	    //   debugger;
-	    //   const span = document.createElement('span');
-	    //   let total = correct + wrong;
-	    //   span.textContent = Math.floor((correct - wrong) / total * 100) + " %";
-	    //   span.className = 'number';
-	    //   return span;
-	    // }
-	
-	  }, {
-	    key: 'charInMin',
-	    value: function charInMin(time, text) {
-	      var span = document.createElement('span');
-	      var totalTime = time.initialTime;
-	      span.textContent = Math.floor(text.length / totalTime * 60);
-	      span.className = 'number';
-	      return span;
-	    }
-	  }, {
-	    key: 'display',
-	    value: function display(time, text) {
-	      var wpmDiv = document.getElementById('wpm');
-	      var span = document.getElementsByClassName('wpm')[1];
-	      if (typeof span !== 'undefined') wpmDiv.removeChild(span);
-	      wpmDiv.appendChild(this.calculateWPM(time, text));
-	    }
-	  }, {
-	    key: 'displayResults',
-	    value: function displayResults(time, text, wrong, actualText) {
-	      var resultDivs = document.getElementsByClassName('result');
-	      resultDivs[0].appendChild(this.calculateWPM(time, text));
-	      resultDivs[1].appendChild(this.adjustedWPM(time, text, wrong));
-	      resultDivs[2].appendChild(this.charInMin(time, text));
-	      // resultDivs[2].appendChild(this.accuracy(typedtext, actualText));
-	    }
-	  }]);
-	
-	  return analyzeWPM;
-	}();
-	
-	module.exports = analyzeWPM;
-
-/***/ },
-/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -618,7 +554,7 @@
 	
 	var _highlightText2 = _interopRequireDefault(_highlightText);
 	
-	var _moveCursor = __webpack_require__(7);
+	var _moveCursor = __webpack_require__(6);
 	
 	var _moveCursor2 = _interopRequireDefault(_moveCursor);
 	
@@ -640,13 +576,20 @@
 	    this.wpm = wpm;
 	    this.animationId = null;
 	    this.time = game.time;
+	    this.noInput = true;
 	
-	    document.addEventListener('keydown', this.handleKeyEvent.bind(this));
+	    var inputDiv = document.getElementById('user-typing');
+	    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
 	  }
 	
 	  _createClass(Typing, [{
 	    key: 'handleKeyEvent',
 	    value: function handleKeyEvent(e) {
+	      console.log(e);
+	      if (this.noInput) {
+	        this.game.startCountingTime();
+	      }
+	      this.noInput = false;
 	      var alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
 	      var input = document.getElementById('user-typing');
 	      var lastWord = this.typedWord.split(" ")[this.cursorPos];
@@ -655,8 +598,8 @@
 	      // console.log("before space", input.innerHTML)
 	      if (e.keyCode === 32) {
 	        // space
-	        // debugger;
 	        (0, _highlightText2.default)(this.cursorPos + 1, this.wordsArray);
+	        // debugger;
 	        input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length);
 	        this.typedWord += " "; // add space
 	        // console.log("before replacing", input.innerHTML)
@@ -713,7 +656,7 @@
 	      //   console.log(x);
 	      //   x.moveCars(0, 1200/300, 0, 1);
 	      // })
-	      this.game.gameOver(this.time.timer, this.numWrong);
+	      // this.game.gameOver(this.time.timer, this.numWrong);
 	    }
 	  }]);
 	
@@ -723,7 +666,7 @@
 	module.exports = Typing;
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -749,6 +692,87 @@
 	};
 	
 	exports.default = moveCursor;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var analyzeWPM = function () {
+	  function analyzeWPM() {
+	    _classCallCheck(this, analyzeWPM);
+	  }
+	
+	  _createClass(analyzeWPM, [{
+	    key: 'calculateWPM',
+	    value: function calculateWPM(time, text) {
+	      var span = document.createElement('span');
+	      var currentTimeLeft = time.timer;
+	      var totalTime = time.initialTime;
+	      span.textContent = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60);
+	      span.className = 'wpm';
+	      return span;
+	    }
+	  }, {
+	    key: 'adjustedWPM',
+	    value: function adjustedWPM(time, text, wrong) {
+	      var span = document.createElement('span');
+	      var wpm = text.length / 5;
+	      var totalTime = time.initialTime;
+	      wpm = Math.floor((wpm - wrong) / totalTime * 60);
+	      if (wpm < 0) {
+	        wpm = 0;
+	      }
+	      span.textContent = wpm;
+	      span.className = 'wpm';
+	      return span;
+	    }
+	    // accuracy(wrong, correct){
+	    //   debugger;
+	    //   const span = document.createElement('span');
+	    //   let total = correct + wrong;
+	    //   span.textContent = Math.floor((correct - wrong) / total * 100) + " %";
+	    //   span.className = 'number';
+	    //   return span;
+	    // }
+	
+	  }, {
+	    key: 'charInMin',
+	    value: function charInMin(time, text) {
+	      var span = document.createElement('span');
+	      var totalTime = time.initialTime;
+	      span.textContent = Math.floor(text.length / totalTime * 60);
+	      span.className = 'number';
+	      return span;
+	    }
+	  }, {
+	    key: 'display',
+	    value: function display(time, text) {
+	      var wpmDiv = document.getElementById('wpm');
+	      var span = document.getElementsByClassName('wpm')[1];
+	      if (typeof span !== 'undefined') wpmDiv.removeChild(span);
+	      wpmDiv.appendChild(this.calculateWPM(time, text));
+	    }
+	  }, {
+	    key: 'displayResults',
+	    value: function displayResults(time, text, wrong, actualText) {
+	      var resultDivs = document.getElementsByClassName('result');
+	      resultDivs[0].appendChild(this.calculateWPM(time, text));
+	      resultDivs[1].appendChild(this.adjustedWPM(time, text, wrong));
+	      resultDivs[2].appendChild(this.charInMin(time, text));
+	      // resultDivs[2].appendChild(this.accuracy(typedtext, actualText));
+	    }
+	  }]);
+	
+	  return analyzeWPM;
+	}();
+	
+	module.exports = analyzeWPM;
 
 /***/ }
 /******/ ]);

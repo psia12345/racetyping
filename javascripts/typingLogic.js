@@ -13,10 +13,17 @@ class Typing{
     this.wpm = wpm;
     this.animationId = null;
     this.time = game.time;
+    this.noInput = true;
 
-    document.addEventListener('keydown', this.handleKeyEvent.bind(this));
+    const inputDiv = document.getElementById('user-typing');
+    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
   handleKeyEvent(e){
+    console.log(e);
+    if (this.noInput){
+      this.game.startCountingTime();
+    }
+    this.noInput = false;
     const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
     const input = document.getElementById('user-typing');
     let lastWord = this.typedWord.split(" ")[this.cursorPos];
@@ -24,8 +31,8 @@ class Typing{
     this.wordsArray = this.game.wordsArray;
     // console.log("before space", input.innerHTML)
     if (e.keyCode === 32) { // space
-      // debugger;
       highlightCurrentWord(this.cursorPos + 1, this.wordsArray);
+      // debugger;
       input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length)
       this.typedWord += " "; // add space
       // console.log("before replacing", input.innerHTML)
@@ -79,7 +86,7 @@ class Typing{
     //   console.log(x);
     //   x.moveCars(0, 1200/300, 0, 1);
     // })
-    this.game.gameOver(this.time.timer, this.numWrong);
+    // this.game.gameOver(this.time.timer, this.numWrong);
   }
 
 
