@@ -16,4 +16,4 @@ const moveCursor = (el) => {
   }
 };
 
-export default moveCursor;
+module.exports = moveCursor;

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="client/css/canvas_style.css">
+    <link rel="stylesheet" href="client/css/modal.css">
+    <link rel="stylesheet" href="client/css/splash_page.css">
+    <title>Race Typing</title>
+  </head>
+  <body>
+    <div id="splash-page">
+      <h1>Race Typing</h1>
+      <div id="option-buttons">
+        <button>Instructions</button>
+        <button class="new-game">New Game</button>
+        <select id="time">Select Time
+          <option value="1">1 minute</option>
+          <option value="3">3 minutes</option>
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+        </select>
+      </div>
+
+    </div>
+    <div id="waiting">Waiting for a second player to join</div>
+    <div id="the-game">
+
+      <nav>
+        <div id="nav-bar">
+          <div id="results">
+            <div class="nav" id="timer"><img src="https://res.cloudinary.com/psia12345/image/upload/c_scale,h_50/v1483605541/timer_wa8hir.png" alt="timer">
+            </div>
+            <div id="progress">
+              <div id="bar"></div>
+            </div>
+            <div class="nav wpm" id="wpm">WPM:
+              <span class="wpm">0</span>
+            </div>
+          </div>
+          <div id="game-controller">
+            <div class="nav" id="end-game">End Game</div>
+          </div>
+        </div>
+      </nav>
+      <div id='modal' class='modal'>
+        <div class='modal-content'>
+          <p>Results:</p>
+          <div class="result">WPM: </div>
+          <div class="result">Adjusted WPM: </div>
+          <div class="result">Number of Character Typed In a Minute: </div>
+          <div class="result">Accuracy: </div>
+          <button>Play Again</button>
+          <button>Return to Main Page</button>
+        </div>
+      </div>
+      <div class="clearfix" id="canvas-container">
+        <canvas id="canvas" height="350px"></canvas>
+        <div class="images">
+          <img
+          src="https://res.cloudinary.com/psia12345/image/upload/c_scale,h_450,w_1000/v1483595002/Racetrack_ohtjjp.jpg"
+          alt="racetrack" id="racetrack">
+          <img src="client/images/greenCar.gif" alt="green car" id="greencar">
+          <img src="client/images/redCar.gif" alt="red car" id="redcar">
+        </div>
+      </div>
+
+      <div id="clearfix">
+      <div id="bottom-logic">
+        <div id="typing-text">
+          <div id="text"></div>
+        </div>
+        <div id="user-input">
+          <div id="user-typing" data-text="Start typing" tabindex="-1"/></div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+    <script src="https://cdn.socket.io/socket.io-1.4.4.js"></script>
+    <script type="text/javascript" src="./client/bundle.js"></script>
+    <!-- <script type="text/javascript" src="javascripts/car.js"></script> -->
+  </body>
+
+</html>

@@ -1,5 +1,6 @@
 class analyzeWPM {
   calculateWPM(time, text) {
+    // debugger;
     const span = document.createElement('span');
     let currentTimeLeft = time.timer;
     let totalTime = time.initialTime;

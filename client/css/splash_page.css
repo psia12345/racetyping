@@ -1,0 +1,40 @@
+#splash-page h1{
+  color: white;
+  font-size: 100px;
+  text-align: center;
+}
+#option-buttons{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+#option-buttons button{
+  display: block;
+  font-size: 40px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: white;
+  border: none;
+  margin: 20px;
+}
+
+#option-buttons select{
+  display: block;
+  font-size: 40px;
+  height: 68px;
+  border-radius: 5px;
+  background-color: white;
+  border: none;
+  margin: 20px;
+}
+
+#waiting{
+  display: none;
+  color: white;
+}
+
+#the-game{
+  display: none;
+}

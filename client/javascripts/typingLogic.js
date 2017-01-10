@@ -1,11 +1,11 @@
-import highlightCurrentWord from './highlightText';
-import moveCursor from './moveCursor';
+const moveCursor = require('./moveCursor');
+const Player = require('./player');
 
 class Typing{
   constructor(game, ctx, wpm){
     this.typedWord = "";
     this.cursorPos = 0;
-    this.wordsArray = game.wordsArray;
+    this.wordsArray = [];
     this.numCorrect = 0;
     this.numWrong = 0;
     this.game = game;
@@ -14,24 +14,28 @@ class Typing{
     this.animationId = null;
     this.time = game.time;
     this.noInput = true;
+    this.player = new Player()
 
     const inputDiv = document.getElementById('user-typing');
     inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
   handleKeyEvent(e){
-    console.log(e);
     if (this.noInput){
       this.game.startCountingTime();
     }
+    this.game.moveCars(0, 2, 0, 1)
+    this.player.moveCarForward = true;
+    this.player.updatePosition(this.wpm);
+
     this.noInput = false;
     const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
     const input = document.getElementById('user-typing');
     let lastWord = this.typedWord.split(" ")[this.cursorPos];
     let sentenceLength = input.innerHTML.length;
-    this.wordsArray = this.game.wordsArray;
+    // this.wordsArray = this.game.wordsArray;
     // console.log("before space", input.innerHTML)
     if (e.keyCode === 32) { // space
-      highlightCurrentWord(this.cursorPos + 1, this.wordsArray);
+      this.highlightCurrentWord(this.cursorPos + 1);
       // debugger;
       input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length)
       this.typedWord += " "; // add space
@@ -71,7 +75,7 @@ class Typing{
           this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
         }
       console.log("backspace", input.innerHTML)
-      highlightCurrentWord(this.cursorPos, this.wordsArray);
+      this.highlightCurrentWord(this.cursorPos);
   // missing some sort of input.innerHTML slice method to account for bug
     } else if (alphabet.includes(e.key.toLowerCase())){
       this.typedWord += e.key;
@@ -87,8 +91,30 @@ class Typing{
     //   x.moveCars(0, 1200/300, 0, 1);
     // })
     // this.game.gameOver(this.time.timer, this.numWrong);
+
   }
+  highlightCurrentWord(position, wordsArray){
+    const textDiv = document.getElementById('text');
+    this.wordsArray = wordsArray || this.wordsArray;
+    let laterString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
+    const currentWord = document.createElement('span');
 
+    if (typeof this.wordsArray[position] !== 'undefined') {
+      currentWord.textContent = this.wordsArray[position] + " ";
+    } else {
+      currentWord.textContent = "";
+    }
+    const highlightedElement = document.getElementsByClassName("highlight")[0];
 
+    if (highlightedElement){
+      highlightedElement.nextSibling.textContent = "";
+      textDiv.removeChild(highlightedElement);
+    } else {
+      textDiv.textContent = "";
+    }
+    currentWord.className = 'highlight';
+    textDiv.appendChild(currentWord);
+    textDiv.appendChild(document.createTextNode(laterString));
+  }
 }
 module.exports = Typing;
