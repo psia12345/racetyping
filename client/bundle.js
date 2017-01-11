@@ -66,7 +66,7 @@
 	  waiting.style.display = 'none';
 
 	  const time = document.getElementById('time');
-	  timeLimit = parseInt(time.options[time.selectedIndex].value) * 60;
+	  timeLimit = parseInt(time.options[time.selectedIndex].value); // multiply by 60 to make into second
 
 	  const gameView = document.getElementById('the-game');
 	  gameView.style.display = 'unset';
@@ -103,7 +103,7 @@
 	  socket.emit('typedForward', { inputId: 'forward', state: true });
 
 	  socket.on('newPositions', data => {
-	    debugger;
+	    // debugger;
 	    ctx.clearRect(0, 0, WIDTH, 350);
 	    console.log(data.player1);
 	    console.log(data);
@@ -245,14 +245,14 @@
 	const Timer = __webpack_require__(2);
 	const randomWords = __webpack_require__(3);
 	const Typing = __webpack_require__(4);
-	const analyzeWPM = __webpack_require__(8);
+	const WordCalculation = __webpack_require__(10);
 
 	class Game {
 	  constructor(time, ctx) {
 	    this.intervalId = null;
 	    this.wordsArray = [];
 	    this.ctx = ctx;
-	    this.wpm = new analyzeWPM();
+	    this.wpm = new WordCalculation();
 	    this.time = new Timer(time, this);
 	    this.typing = new Typing(this, this.ctx, this.wpm);
 	    this.players = [];
@@ -267,6 +267,11 @@
 	    const redcar = document.getElementById('redcar');
 	    const greencar = document.getElementById('greencar');
 	    const WIDTH = window.innerWidth;
+
+	    this.players.forEach(player => {
+	      debugger;
+	      player.drawCar();
+	    });
 
 	    inputDiv.contentEditable = true;
 	    inputDiv.focus();
@@ -307,7 +312,7 @@
 	  }
 	  moveCars(redPos, redVel, greenPos, greenVel) {
 	    const WIDTH = window.innerWidth;
-	    debugger;
+	    // debugger;
 	    this.players[0].car.drawRaceTrack();
 	    this.players[0].car.moveCarForward(this.wpm);
 
@@ -357,13 +362,15 @@
 	    bar.style.width = this.width + '%';
 	  }
 	  decrementSeconds(game, numWrong) {
-	    const decrementFactor = Math.floor(100 / this.initialTime);
+	    const decrementFactor = 100 / this.initialTime;
 	    this.timer--;
 	    this.width -= decrementFactor;
+	    if (this.width <= 0) {
+	      this.width = 0;
+	    }
 	    this.displayTimer();
 	    if (this.timer === 0) {
 	      this.game.gameOver(this.timer, game.typing.numWrong);
-	      return true;
 	    }
 	  }
 	}
@@ -572,19 +579,15 @@
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// const Entity = require('./entity');
 	const Car = __webpack_require__(7);
 
 	class Player {
-	  constructor(id, x, y, img, ctx) {
+	  constructor(id, socketId) {
 	    this.id = id;
+	    this.socketId = socketId;
 	    this.typingForward = false;
 	    this.typingBackward = false;
-	    this.img = img;
-	    this.ctx = document.getElementById('canvas').getContext('2d');
-	    // this.addDomElement();
-
-	    this.car = new Car(x, y, img, this.ctx);
+	    this.car = null;
 	  }
 	  updatePosition(wpm) {
 	    if (this.typingForward) {
@@ -593,60 +596,23 @@
 	      this.car.moveCarBackward(wpm);
 	    }
 	  }
-
-	  // addDomElement(){
-	  //   this.ctx = document.getElementById('canvas').getContext('2d');
-	  //   if(this.img === 1){
-	  //     this.img = document.getElementById('redcar');
-	  //   } else{
-	  //     this.img = doucment.getElementById('greencar');
-	  //   }
-	  // }
-
-	  // static onConnect(socket){
-	  //   let player = new Player(socket.id);
-	  //   debugger;
-	  //   Player.list[player.id] = player;
-	  //   socket.on('keyPress', data => {
-	  //     if (data.inputId === 'forward'){
-	  //       player.typingForward = data.state;
-	  //     } else if (data.inputId === 'backward'){
-	  //       player.typingBackward = datat.state;
-	  //     }
-	  //   })
-	  // }
-	  //
-	  // static onDisconnect(socket){
-	  //   delete Player.list[socket.id];
-	  // }
-	  // Player.list[id] = this;
+	  drawCar() {
+	    const redcar = document.getElementById('redcar');
+	    const greencar = document.getElementById('greencar');
+	    const ctx = document.getElementById('canvas').getContext('2d');
+	    if (this.id === 1) {
+	      this.car = new Car(50, 100, redcar, ctx);
+	    } else {
+	      this.car = new Car(50, 250, greencar, ctx);
+	    }
+	  }
 	}
 	module.exports = Player;
-
-	// const Player = (id) => {
-	//   const self = {
-	//     x: 250,
-	//     y: 250,
-	//     id: id,
-	//     number: "" + Math.floor(10 * Math.random()),
-	//     pressingRight: false,
-	//     pressingLeft: false,
-	//     pressingUp: false,
-	//     pressingDown: false,
-	//     maxSpd: 10
-	//   }
-	//   self.updatePosition = () => {
-	//     if(self.pressingRight) self.x += self.maxSpd;
-	//     if (self.pressingLeft) self.x -= self.maxSpd;
-	//   }
-	//   return self;
-	// }
 
 /***/ },
 /* 7 */
 /***/ function(module, exports) {
 
-	
 	class Car {
 	  constructor(x, y, img, ctx) {
 	    this.x = x;
@@ -654,16 +620,19 @@
 	    this.img = img;
 	    this.spd = 0;
 	    this.ctx = ctx;
+	    this.imgWidth = 110;
+	    this.imgHeight = 65;
 	  }
 	  moveCarForward(wpm) {
 	    this.updateSpd(wpm);
 	    this.x += this.spd;
 	    console.log(this.x);
-	    this.ctx.drawImage(this.img, this.x, this.y, 110, 65);
+	    this.ctx.drawImage(this.img, this.x, this.y, this.imgWidth, this.imgHeight);
 	  }
 	  moveCarBackward(wpm) {
 	    this.updateSpd(wpm);
 	    this.x -= this.spd;
+	    this.ctx.drawImage(this.img, this.x, this.y, this.imgWidth, this.imgHeight);
 	  }
 	  drawRaceTrack() {
 	    const racetrack = document.getElementById('racetrack');
@@ -689,84 +658,49 @@
 	      this.spd = 1.2;
 	    }
 	  }
-
 	}
 	module.exports = Car;
 
-	// const divCanvasContainer = document.getElementById('canvas-container');
-	// const canvas = document.getElementById('canvas');
-	// const WIDTH = window.innerWidth;
-	// canvas.width = WIDTH;
-	// const ctx = canvas.getContext('2d');
-	// // const HEIGHT = Math.max(window.innerHeight);
-	// const racetrack = document.getElementById('racetrack');
-	// const redcar = document.getElementById('redcar');
-	// const greencar = document.getElementById('greencar');
-	// ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
-	// ctx.drawImage(redcar, 10, 50, 110, 65)
-	// ctx.drawImage(greencar, 10, 200, 110, 65)
-	// let animationId;
-	//
-	// const moveCars = (redPos, redVel, greenPos, greenVel) => {
-	//   ctx.clearRect(0, 0, WIDTH, 350);
-	//   ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
-	//   ctx.drawImage(redcar, redPos, 50, 110, 65);
-	//   redPos += redVel;
-	//   ctx.drawImage(greencar, greenPos, 200, 110, 65);
-	//   greenPos += greenVel;
-	//   animationId = requestAnimationFrame(function(){
-	//     moveCars(redPos, redVel, greenPos, greenVel);
-	//   })
-	// }
-	// // to move cars
-	// requestAnimationFrame(function(){
-	//   moveCars(0, 1200/300, 0, 1);
-	// })
-	//
-	// const stopCar = () => {
-	//   cancelAnimationFrame(animationId);
-	// }
-	// setTimeout(stopCar, 5000);
-
 /***/ },
-/* 8 */
+/* 8 */,
+/* 9 */,
+/* 10 */
 /***/ function(module, exports) {
 
-	class analyzeWPM {
+	class WordCalculation {
 	  calculateWPM(time, text) {
-	    // debugger;
+	    // time object
 	    const span = document.createElement('span');
-	    let currentTimeLeft = time.timer;
-	    let totalTime = time.initialTime;
-	    span.textContent = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60);
+	    const currentTimeLeft = time.timer;
+	    const totalTime = time.initialTime;
+	    span.textContent = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60) + " wpm";
 	    span.className = 'wpm';
 	    return span;
 	  }
 	  adjustedWPM(time, text, wrong) {
+	    // time object
 	    const span = document.createElement('span');
+	    const totalTime = time.initialTime;
 	    let wpm = text.length / 5;
-	    let totalTime = time.initialTime;
 	    wpm = Math.floor((wpm - wrong) / totalTime * 60);
-	    if (wpm < 0) {
-	      wpm = 0;
-	    }
-	    span.textContent = wpm;
+	    if (wpm <= 0) wpm = 0;
+	    span.textContent = wpm + " wpm";
 	    span.className = 'wpm';
 	    return span;
 	  }
-	  // accuracy(wrong, correct){
-	  //   debugger;
-	  //   const span = document.createElement('span');
-	  //   let total = correct + wrong;
-	  //   span.textContent = Math.floor((correct - wrong) / total * 100) + " %";
-	  //   span.className = 'number';
-	  //   return span;
-	  // }
+	  accuracy(wrong, correct) {
+	    // number of correct charcters typed / total number of charcters (should still have accuracy < 100 % if there are any corrected mistake)
+	    // const span = document.createElement('span');
+	    // const total = correct + wrong;
+	    // span.textContent = Math.floor((correct - wrong) / total * 100) + " %";
+	    // span.className = 'wpm';
+	    // return span;
+	  }
 	  charInMin(time, text) {
 	    const span = document.createElement('span');
-	    let totalTime = time.initialTime;
-	    span.textContent = Math.floor(text.length / totalTime * 60);
-	    span.className = 'number';
+	    const timePassed = time.initialTime - time.timer;
+	    span.textContent = Math.floor(text.length / timePassed * 60) + " characters";
+	    span.className = 'wpm';
 	    return span;
 	  }
 	  display(time, text) {
@@ -783,7 +717,7 @@
 	    // resultDivs[2].appendChild(this.accuracy(typedtext, actualText));
 	  }
 	}
-	module.exports = analyzeWPM;
+	module.exports = WordCalculation;
 
 /***/ }
 /******/ ]);

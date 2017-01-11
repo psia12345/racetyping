@@ -10,13 +10,13 @@ class Timer{
     bar.style.width = this.width + '%';
   }
   decrementSeconds(game, numWrong){
-    const decrementFactor = Math.floor(100/ this.initialTime);
+    const decrementFactor = (100 / this.initialTime);
     this.timer--;
     this.width-= decrementFactor;
+    if (this.width <= 0){ this.width = 0}
     this.displayTimer();
     if (this.timer === 0){
       this.game.gameOver(this.timer, game.typing.numWrong);
-      return true;
     }
   }
 }

@@ -20,39 +20,48 @@ const io = require('socket.io')(server, {});
 io.sockets.on('connection', socket => {
   socket.id = Math.random();
   SOCKET_LIST[socket.id] = socket;
-  let player = new Player(socket.id);
-  PLAYER_LIST[socket.id] = player;
+  // let player = new Player(socket.id);
   socket.on('newGame', () => {
     if (waitingPlayer){
+      let player = new Player(2, socket.id)
+      PLAYER_LIST[socket.id] = player;
       notify(waitingPlayer, socket);
       waitingPlayer = null;
     } else {
       waitingPlayer = socket;
+      let player = new Player(1, socket.id)
+      PLAYER_LIST[socket.id] = player;
       socket.emit('msg', 'waiting for another player');
     }
-  })
-
-  socket.on('typedForward', data => {
-    console.log('typedForward emitted from client');
-    if (data.inputId === 'forward'){
-      player.typingForward = data.state;
-    } else if ( data.inputId === 'backward'){
-      player.typingBackward = data.state;
+    for (let i in PLAYER_LIST){
+      let pack = [];
+      pack.push(PLAYER_LIST[i]);
     }
-    const pack = [];
-    pack.push(player);
-    socket.emit('newPositions', pack);
+    // console.log("PLAYERRRRRRRRRRR", PLAYER_LIST);
+    // console.log("SOCKETTTTTTTTT", SOCKET_LIST);
   })
 
-  socket.on('disconnect', () => {
-    delete SOCKET_LIST[socket.id];
-    delete PLAYER_LIST[socket.id];
-  })
+  // socket.on('typedForward', data => {
+  //   // console.log('typedForward emitted from client');
+  //   if (data.inputId === 'forward'){
+  //     player.typingForward = data.state;
+  //   } else if ( data.inputId === 'backward'){
+  //     player.typingBackward = data.state;
+  //   }
+  //   const pack = [];
+  //   pack.push(player);
+  //   socket.emit('newPositions', pack);
+  // })
+  //
+  // socket.on('disconnect', () => {
+  //   delete SOCKET_LIST[socket.id];
+  //   delete PLAYER_LIST[socket.id];
+  // })
 });
 
 function notify(...sockets){
   sockets.forEach(socket => {
-    console.log("1", socket.id);
+    // console.log("1", socket.id);
     socket.emit('msg', 'Start Typing')});
 }
 // // socket => {

@@ -1,7 +1,7 @@
 const Timer = require('./timer');
 const randomWords = require('../../node_modules/random-words');
 const Typing = require('./typingLogic');
-const analyzeWPM = require('./analyzeWPM');
+const WordCalculation = require('./wordCalculation');
 
 
 class Game{
@@ -9,7 +9,7 @@ class Game{
     this.intervalId = null;
     this.wordsArray = [];
     this.ctx = ctx;
-    this.wpm = new analyzeWPM;
+    this.wpm = new WordCalculation;
     this.time = new Timer(time, this);
     this.typing = new Typing(this, this.ctx, this.wpm);
     this.players = [];
@@ -25,6 +25,9 @@ class Game{
     const greencar = document.getElementById('greencar');
     const WIDTH = window.innerWidth;
 
+    this.players.forEach(player => { debugger;
+      player.drawCar();
+    })
 
     inputDiv.contentEditable = true;
     inputDiv.focus();
@@ -63,11 +66,11 @@ class Game{
     const redcar = document.getElementById('redcar');
     const greencar = document.getElementById('greencar');
 
-    
+
   }
   moveCars(redPos, redVel, greenPos, greenVel){
     const WIDTH = window.innerWidth;
-    debugger;
+    // debugger;
     this.players[0].car.drawRaceTrack();
     this.players[0].car.moveCarForward(this.wpm);
 

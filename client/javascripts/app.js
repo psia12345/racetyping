@@ -20,7 +20,7 @@ newGame.addEventListener('click', () => {
   waiting.style.display = 'none';
 
   const time = document.getElementById('time');
-  timeLimit = parseInt(time.options[time.selectedIndex].value) * 60;
+  timeLimit = parseInt(time.options[time.selectedIndex].value) ; // multiply by 60 to make into second
 
   const gameView = document.getElementById('the-game');
   gameView.style.display = 'unset';
@@ -57,7 +57,7 @@ inputDiv.onkeydown = e => {
   socket.emit('typedForward', { inputId: 'forward', state: true })
 
   socket.on('newPositions', data => {
-    debugger;
+    // debugger;
     ctx.clearRect(0, 0, WIDTH, 350);
     console.log(data.player1);
     console.log(data);
