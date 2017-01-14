@@ -1,20 +1,16 @@
 const moveCursor = require('./moveCursor');
-const Player = require('./player');
 
 class Typing{
-  constructor(game, ctx, wpm){
+  constructor(game, wpm){
     this.typedWord = "";
     this.cursorPos = 0;
     this.wordsArray = [];
     this.numCorrect = 0;
     this.numWrong = 0;
     this.game = game;
-    this.ctx = ctx;
     this.wpm = wpm;
     this.animationId = null;
-    this.time = game.time;
     this.noInput = true;
-    this.player = new Player()
 
     const inputDiv = document.getElementById('user-typing');
     inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
@@ -23,37 +19,31 @@ class Typing{
     if (this.noInput){
       this.game.startCountingTime();
     }
-    this.game.moveCars(0, 2, 0, 1)
-    this.player.moveCarForward = true;
-    this.player.updatePosition(this.wpm);
-
     this.noInput = false;
     const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
-    const input = document.getElementById('user-typing');
+    const inputDiv = document.getElementById('user-typing');
     let lastWord = this.typedWord.split(" ")[this.cursorPos];
-    let sentenceLength = input.innerHTML.length;
+    let sentenceLength = inputDiv.innerHTML.length;
     // this.wordsArray = this.game.wordsArray;
     // console.log("before space", input.innerHTML)
     if (e.keyCode === 32) { // space
       this.highlightCurrentWord(this.cursorPos + 1);
-      // debugger;
-      input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length)
+      inputDiv.innerHTML = inputDiv.innerHTML.slice(0, sentenceLength - lastWord.length)
       this.typedWord += " "; // add space
       // console.log("before replacing", input.innerHTML)
-      let elToRemove = input.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g)
+      let elToRemove = inputDiv.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g)
       if (elToRemove){ elToRemove = elToRemove[0] }
-      input.innerHTML = input.innerHTML.replace(elToRemove, "");
+      inputDiv.innerHTML = inputDiv.innerHTML.replace(elToRemove, "");
       // console.log(input.innerHTML)
       if (this.wordsArray[this.cursorPos] === lastWord){
         this.numCorrect++;
-        // console.log("after adding correct", input.innerHTML)
-        input.innerHTML += `<font color="gray">${lastWord}</font>`;
+        inputDiv.innerHTML += `<font color="gray">${lastWord}</font>`;
       } else {
         this.numWrong++;
-        input.innerHTML += `<font color="red">${lastWord}</font>`;
+        inputDiv.innerHTML += `<font color="red">${lastWord}</font>`;
         // console.log("after adding incorrect", input.innerHTML)
       }
-      moveCursor(input);
+      moveCursor(inputDiv);
       this.cursorPos++;
       document.execCommand('forecolor', false, '000000');
     } else if (e.keyCode === 8){ // backspace
@@ -74,17 +64,16 @@ class Typing{
         } else {
           this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
         }
-      console.log("backspace", input.innerHTML)
+      console.log("backspace", inputDiv.innerHTML)
       this.highlightCurrentWord(this.cursorPos);
   // missing some sort of input.innerHTML slice method to account for bug
     } else if (alphabet.includes(e.key.toLowerCase())){
       this.typedWord += e.key;
     } else {
       e.preventDefault();
-      cancelAnimationFrame(this.animationId);
     }
 
-    this.wpm.display(this.time, this.typedWord);
+    // this.wpm.display(this.time, this.typedWord);
     // let x = this
     // requestAnimationFrame(function(x){
     //   console.log(x);

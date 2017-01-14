@@ -1,9 +1,13 @@
 class WordCalculation {
+  constructor(){
+    this.currentWPM = 0;
+  }
   calculateWPM(time, text) { // time object
     const span = document.createElement('span');
     const currentTimeLeft = time.timer;
     const totalTime = time.initialTime;
-    span.textContent = Math.floor((text.length / 5) / (totalTime - currentTimeLeft) * 60) + " wpm";
+    this.currentWPM = Math.floor((text.length / 5) / (totalTime - currentTimeLeft) * 60);
+    span.textContent = this.currentWPM + " wpm";
     span.className = 'wpm';
     return span;
   }

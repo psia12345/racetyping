@@ -11,7 +11,9 @@ canvas.width = WIDTH;
 const ctx = canvas.getContext('2d');
 const newGame = document.getElementsByClassName('new-game')[0];
 let timeLimit;
-
+let player1;
+let player2;
+let game;
 newGame.addEventListener('click', () => {
   const splashPage = document.getElementById('splash-page');
   splashPage.style.display = 'none';
@@ -20,7 +22,7 @@ newGame.addEventListener('click', () => {
   waiting.style.display = 'none';
 
   const time = document.getElementById('time');
-  timeLimit = parseInt(time.options[time.selectedIndex].value) ; // multiply by 60 to make into second
+  timeLimit = parseInt(time.options[time.selectedIndex].value) * 5 ; // multiply by 60 to make into second
 
   const gameView = document.getElementById('the-game');
   gameView.style.display = 'unset';
@@ -39,9 +41,9 @@ function message(msg){
 
     const redcar = document.getElementById('redcar');
     const greencar = document.getElementById('greencar');
-    let player1 = new Player(1, 10, 50, redcar, ctx);
-    let player2 = new Player(2, 10, 200, greencar, ctx);
-    let game = new Game(timeLimit, ctx);
+    player1 = new Player(1, 10, 50, redcar, ctx);
+    player2 = new Player(2, 10, 200, greencar, ctx);
+    game = new Game(timeLimit, ctx);
     console.log("game starts")
     game.initializeGame(20, player1, player2);
   } else {
@@ -52,21 +54,45 @@ function message(msg){
     waiting.style.display = 'unset';
   }
 }
+// socket.on('newPosition', pack => {
+//   for (let i in pack){
+//     if (pack[i].typingForward) {
+//       if (pack[i].id === 1){
+//         console.log(player1.car)
+//       }
+//     }
+//   }
+// })
 
-inputDiv.onkeydown = e => {
-  socket.emit('typedForward', { inputId: 'forward', state: true })
-
-  socket.on('newPositions', data => {
-    // debugger;
+socket.on('newPosition', pack => {
+  console.log(player1);
+  if (typeof player1 === 'undefined' || typeof player2 === 'undefined'){
+    return;
+  } else if (player1.car === null || player2.car === null){
+    return;
+  }
+  else if (pack !== null){
     ctx.clearRect(0, 0, WIDTH, 350);
-    console.log(data.player1);
-    console.log(data);
+    player1.car.drawRaceTrack();
+    i = 0;
+    player1.car.drawCar(pack[i].x);
+    player2.car.drawCar(pack[i + 1].x)
+  }
+
+})
+inputDiv.onkeydown = e => {
+  socket.emit('typedForward', {
+    inputId: 'forward',
+    state: true,
+    wpm: game.wpm.currentWPM
   })
 }
 
 inputDiv.onkeyup = e => {
   socket.emit('typedForward', {
-    inputId: 'forward', state: false
+    inputId: 'forward',
+    state: false,
+    wpm: game.wpm.currentWPM
   })
 }
 

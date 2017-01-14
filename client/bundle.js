@@ -47,7 +47,7 @@
 	//entry file for client
 	const socket = io();
 	const Game = __webpack_require__(1);
-	const Player = __webpack_require__(6);
+	const Player = __webpack_require__(7);
 
 	const inputDiv = document.getElementById('user-typing');
 	const divCanvasContainer = document.getElementById('canvas-container');
@@ -57,7 +57,9 @@
 	const ctx = canvas.getContext('2d');
 	const newGame = document.getElementsByClassName('new-game')[0];
 	let timeLimit;
-
+	let player1;
+	let player2;
+	let game;
 	newGame.addEventListener('click', () => {
 	  const splashPage = document.getElementById('splash-page');
 	  splashPage.style.display = 'none';
@@ -66,7 +68,7 @@
 	  waiting.style.display = 'none';
 
 	  const time = document.getElementById('time');
-	  timeLimit = parseInt(time.options[time.selectedIndex].value); // multiply by 60 to make into second
+	  timeLimit = parseInt(time.options[time.selectedIndex].value) * 5; // multiply by 60 to make into second
 
 	  const gameView = document.getElementById('the-game');
 	  gameView.style.display = 'unset';
@@ -85,9 +87,9 @@
 
 	    const redcar = document.getElementById('redcar');
 	    const greencar = document.getElementById('greencar');
-	    let player1 = new Player(1, 10, 50, redcar, ctx);
-	    let player2 = new Player(2, 10, 200, greencar, ctx);
-	    let game = new Game(timeLimit, ctx);
+	    player1 = new Player(1, 10, 50, redcar, ctx);
+	    player2 = new Player(2, 10, 200, greencar, ctx);
+	    game = new Game(timeLimit, ctx);
 	    console.log("game starts");
 	    game.initializeGame(20, player1, player2);
 	  } else {
@@ -98,21 +100,43 @@
 	    waiting.style.display = 'unset';
 	  }
 	}
+	// socket.on('newPosition', pack => {
+	//   for (let i in pack){
+	//     if (pack[i].typingForward) {
+	//       if (pack[i].id === 1){
+	//         console.log(player1.car)
+	//       }
+	//     }
+	//   }
+	// })
 
-	inputDiv.onkeydown = e => {
-	  socket.emit('typedForward', { inputId: 'forward', state: true });
-
-	  socket.on('newPositions', data => {
-	    // debugger;
+	socket.on('newPosition', pack => {
+	  console.log(player1);
+	  if (typeof player1 === 'undefined' || typeof player2 === 'undefined') {
+	    return;
+	  } else if (player1.car === null || player2.car === null) {
+	    return;
+	  } else if (pack !== null) {
 	    ctx.clearRect(0, 0, WIDTH, 350);
-	    console.log(data.player1);
-	    console.log(data);
+	    player1.car.drawRaceTrack();
+	    i = 0;
+	    player1.car.drawCar(pack[i].x);
+	    player2.car.drawCar(pack[i + 1].x);
+	  }
+	});
+	inputDiv.onkeydown = e => {
+	  socket.emit('typedForward', {
+	    inputId: 'forward',
+	    state: true,
+	    wpm: game.wpm.currentWPM
 	  });
 	};
 
 	inputDiv.onkeyup = e => {
 	  socket.emit('typedForward', {
-	    inputId: 'forward', state: false
+	    inputId: 'forward',
+	    state: false,
+	    wpm: game.wpm.currentWPM
 	  });
 	};
 
@@ -242,48 +266,49 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Timer = __webpack_require__(2);
-	const randomWords = __webpack_require__(3);
-	const Typing = __webpack_require__(4);
-	const WordCalculation = __webpack_require__(10);
+	const randomWords = __webpack_require__(2);
+	const Timer = __webpack_require__(3);
+	const WordCalculation = __webpack_require__(4);
+	const Typing = __webpack_require__(5);
 
 	class Game {
-	  constructor(time, ctx) {
+	  constructor(maxTime) {
 	    this.intervalId = null;
 	    this.wordsArray = [];
-	    this.ctx = ctx;
-	    this.wpm = new WordCalculation();
-	    this.time = new Timer(time, this);
-	    this.typing = new Typing(this, this.ctx, this.wpm);
 	    this.players = [];
+	    this.time = new Timer(maxTime, this);
+	    this.wpm = new WordCalculation();
+	    this.typing;
 
-	    document.addEventListener('click', this.handleClick.bind(this));
+	    // document.addEventListener('click', this.handleClick.bind(this))
 	  }
-	  initializeGame(words, ...players) {
-	    // debugger;
-	    this.players = players;
+	  initializeGame(numWords, ...players) {
 	    const inputDiv = document.getElementById('user-typing');
 	    const racetrack = document.getElementById('racetrack');
 	    const redcar = document.getElementById('redcar');
 	    const greencar = document.getElementById('greencar');
 	    const WIDTH = window.innerWidth;
 
-	    this.players.forEach(player => {
-	      debugger;
-	      player.drawCar();
-	    });
+	    this.typing = new Typing(this, this.wpm);
+	    this.players = players;
+	    this.players.forEach(player => player.assignCar());
 
 	    inputDiv.contentEditable = true;
 	    inputDiv.focus();
-	    this.generateWords(words);
-	    this.ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
-	    this.ctx.drawImage(redcar, 10, 50, 110, 65);
-	    this.ctx.drawImage(greencar, 10, 200, 110, 65);
+	    this.generateWords(numWords);
 	    this.typing.highlightCurrentWord(0, this.wordsArray);
+
+	    const ctx = document.getElementById('canvas').getContext('2d');
+	    ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
+	    ctx.drawImage(redcar, 10, 50, 110, 65);
+	    ctx.drawImage(greencar, 10, 200, 110, 65);
 	  }
 	  startCountingTime() {
-	    this.time.decrementSeconds(this, this.typing.numWrong);
-	    this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time, this), 1000);
+	    this.time.decrementSeconds(this);
+	    this.wpm.calculateWPM(this.time, this.typing.typedWord);
+	    // console.log('game', this);
+	    this.wpm.display(this.time, this.typing.typedWord);
+	    this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
 	  }
 	  gameOver(time, numWrong) {
 	    time = time || this.time.timer;
@@ -295,47 +320,32 @@
 	    const modal = document.getElementById('modal');
 	    modal.style.display = 'block';
 	    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numWrong);
-	    // }else{
-	    //   this.generateWords(1);
-	    //   return false;
-	    // }
 	  }
-	  generateWords(n) {
-	    let words = randomWords(n).join(' ');
-	    this.wordsArray = this.wordsArray.concat(words.split(' '));
+	  generateWords(numWords) {
 	    const textDiv = document.getElementById('text');
+	    let words = randomWords(numWords).join(' ');
+	    this.wordsArray = this.wordsArray.concat(words.split(' '));
 	    textDiv.innerHTML += `${ words } `;
 	  }
-	  assignCars() {
-	    const redcar = document.getElementById('redcar');
-	    const greencar = document.getElementById('greencar');
-	  }
-	  moveCars(redPos, redVel, greenPos, greenVel) {
+	  moveCars() {
 	    const WIDTH = window.innerWidth;
 	    // debugger;
 	    this.players[0].car.drawRaceTrack();
-	    this.players[0].car.moveCarForward(this.wpm);
+	    if (this.players[0].typingForward) {
+	      this.players[0].car.moveCarForward(this.wpm.currentWPM);
+	    } else if (this.players[0].typingBackward) {
+	      this.players[0].car.moveCarForward(this.wpm.currentWPM);
+	    }
 
-	    // let player2 = this.players[1];
-
-
-	    // if (player1.)
-	    // this.ctx.clearRect(0, 0, WIDTH, 350);
-	    // this.ctx.drawImage(racetrack, 0, 0, WIDTH, 350);
-	    // this.ctx.drawImage(redcar, player1.car.x, 50, player1.car.spd, 65);
-	    // // player1.car.x += player1.car.spd;
-	    // // debugger;
-	    // this.ctx.drawImage(greencar, greenPos, 200, 110, 65);
-	    // greenPos += greenVel;
-	    // this.animationId = requestAnimationFrame(() => {
-	    //   console.log(player1.car.x);
-	    //   this.moveCars(player1.car.x, player1.car.spd, greenPos, greenVel);
-	    // })
+	    if (this.players[1].typingForward) {
+	      this.players[1].car.moveCarForward(this.wpm.currentWPM);
+	    } else if (this.players[1].typingBackward) {
+	      this.players[1].car.moveCarForward(this.wpm.currentWPM);
+	    }
 	  }
 	  handleClick(e) {
-	    console.log(e.target);
 	    if (e.target.id === 'end-game' || e.target.id === 'game-controller') {
-	      this.gameOver(this.time, this.typing.numWrong);
+	      this.gameOver(this.time);
 	    } else if (e.target.id === 'play-again') {
 	      //new game
 	    } else if (e.target.id === 'return-main') {
@@ -348,36 +358,6 @@
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
-
-	class Timer {
-	  constructor(time, game) {
-	    this.timer = time;
-	    this.initialTime = time;
-	    this.width = 100;
-	    this.game = game;
-	  }
-	  displayTimer() {
-	    const bar = document.getElementById('bar');
-	    bar.style.width = this.width + '%';
-	  }
-	  decrementSeconds(game, numWrong) {
-	    const decrementFactor = 100 / this.initialTime;
-	    this.timer--;
-	    this.width -= decrementFactor;
-	    if (this.width <= 0) {
-	      this.width = 0;
-	    }
-	    this.displayTimer();
-	    if (this.timer === 0) {
-	      this.game.gameOver(this.timer, game.typing.numWrong);
-	    }
-	  }
-	}
-	module.exports = Timer;
-
-/***/ },
-/* 3 */
 /***/ function(module, exports) {
 
 	var wordList = [
@@ -425,255 +405,51 @@
 	words.wordList = wordList;
 
 /***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/* 3 */
+/***/ function(module, exports) {
 
-	const moveCursor = __webpack_require__(5);
-	const Player = __webpack_require__(6);
-
-	class Typing {
-	  constructor(game, ctx, wpm) {
-	    this.typedWord = "";
-	    this.cursorPos = 0;
-	    this.wordsArray = [];
-	    this.numCorrect = 0;
-	    this.numWrong = 0;
+	class Timer {
+	  constructor(maxTime, game) {
+	    this.timer = maxTime;
+	    this.initialTime = maxTime;
+	    this.width = 100;
 	    this.game = game;
-	    this.ctx = ctx;
-	    this.wpm = wpm;
-	    this.animationId = null;
-	    this.time = game.time;
-	    this.noInput = true;
-	    this.player = new Player();
-
-	    const inputDiv = document.getElementById('user-typing');
-	    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
 	  }
-	  handleKeyEvent(e) {
-	    if (this.noInput) {
-	      this.game.startCountingTime();
-	    }
-	    this.game.moveCars(0, 2, 0, 1);
-	    this.player.moveCarForward = true;
-	    this.player.updatePosition(this.wpm);
-
-	    this.noInput = false;
-	    const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
-	    const input = document.getElementById('user-typing');
-	    let lastWord = this.typedWord.split(" ")[this.cursorPos];
-	    let sentenceLength = input.innerHTML.length;
-	    // this.wordsArray = this.game.wordsArray;
-	    // console.log("before space", input.innerHTML)
-	    if (e.keyCode === 32) {
-	      // space
-	      this.highlightCurrentWord(this.cursorPos + 1);
-	      // debugger;
-	      input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length);
-	      this.typedWord += " "; // add space
-	      // console.log("before replacing", input.innerHTML)
-	      let elToRemove = input.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g);
-	      if (elToRemove) {
-	        elToRemove = elToRemove[0];
-	      }
-	      input.innerHTML = input.innerHTML.replace(elToRemove, "");
-	      // console.log(input.innerHTML)
-	      if (this.wordsArray[this.cursorPos] === lastWord) {
-	        this.numCorrect++;
-	        // console.log("after adding correct", input.innerHTML)
-	        input.innerHTML += `<font color="gray">${ lastWord }</font>`;
-	      } else {
-	        this.numWrong++;
-	        input.innerHTML += `<font color="red">${ lastWord }</font>`;
-	        // console.log("after adding incorrect", input.innerHTML)
-	      }
-	      moveCursor(input);
-	      this.cursorPos++;
-	      document.execCommand('forecolor', false, '000000');
-	    } else if (e.keyCode === 8) {
-	      // backspace
-	      let lastChar = this.typedWord[this.typedWord.length - 1];
-	      let typedSentence = this.typedWord.split(' '); //input.textContent.trim().split(" ");
-	      let wordCount = typedSentence.length;
-	      if (lastChar === " " && typedSentence[wordCount - 2] === this.wordsArray[this.cursorPos - 1]) {
-	        this.numCorrect--;
-	        this.cursorPos--;
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-	      } else if (lastChar === " " && typedSentence[wordCount - 2] !== this.wordsArray[this.cursorPos - 1]) {
-	        this.numWrong--;
-	        this.cursorPos--;
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-	      } else if (lastChar === " ") {
-	        this.cursorPos--;
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-	      } else {
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-	      }
-	      console.log("backspace", input.innerHTML);
-	      this.highlightCurrentWord(this.cursorPos);
-	      // missing some sort of input.innerHTML slice method to account for bug
-	    } else if (alphabet.includes(e.key.toLowerCase())) {
-	      this.typedWord += e.key;
-	    } else {
-	      e.preventDefault();
-	      cancelAnimationFrame(this.animationId);
-	    }
-
-	    this.wpm.display(this.time, this.typedWord);
-	    // let x = this
-	    // requestAnimationFrame(function(x){
-	    //   console.log(x);
-	    //   x.moveCars(0, 1200/300, 0, 1);
-	    // })
-	    // this.game.gameOver(this.time.timer, this.numWrong);
+	  displayTimer() {
+	    const bar = document.getElementById('bar');
+	    bar.style.width = this.width + '%';
 	  }
-	  highlightCurrentWord(position, wordsArray) {
-	    const textDiv = document.getElementById('text');
-	    this.wordsArray = wordsArray || this.wordsArray;
-	    let laterString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
-	    const currentWord = document.createElement('span');
-
-	    if (typeof this.wordsArray[position] !== 'undefined') {
-	      currentWord.textContent = this.wordsArray[position] + " ";
-	    } else {
-	      currentWord.textContent = "";
+	  decrementSeconds() {
+	    const decrementFactor = 100 / this.initialTime;
+	    this.timer--;
+	    this.width -= decrementFactor;
+	    if (this.width <= 0) {
+	      this.width = 0;
 	    }
-	    const highlightedElement = document.getElementsByClassName("highlight")[0];
-
-	    if (highlightedElement) {
-	      highlightedElement.nextSibling.textContent = "";
-	      textDiv.removeChild(highlightedElement);
-	    } else {
-	      textDiv.textContent = "";
+	    this.displayTimer();
+	    if (this.timer === 0) {
+	      this.game.gameOver(this.timer, this.game.typing.numWrong);
 	    }
-	    currentWord.className = 'highlight';
-	    textDiv.appendChild(currentWord);
-	    textDiv.appendChild(document.createTextNode(laterString));
+	    this.game.wpm.calculateWPM(this, this.game.typing.typedWord);
 	  }
 	}
-	module.exports = Typing;
+	module.exports = Timer;
 
 /***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	const moveCursor = el => {
-	    el.focus();
-	    if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
-	        var range = document.createRange();
-	        range.selectNodeContents(el);
-	        range.collapse(false);
-	        var sel = window.getSelection();
-	        sel.removeAllRanges();
-	        sel.addRange(range);
-	    } else if (typeof document.body.createTextRange != "undefined") {
-	        var textRange = document.body.createTextRange();
-	        textRange.moveToElementText(el);
-	        textRange.collapse(false);
-	        textRange.select();
-	    }
-	};
-
-	module.exports = moveCursor;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Car = __webpack_require__(7);
-
-	class Player {
-	  constructor(id, socketId) {
-	    this.id = id;
-	    this.socketId = socketId;
-	    this.typingForward = false;
-	    this.typingBackward = false;
-	    this.car = null;
-	  }
-	  updatePosition(wpm) {
-	    if (this.typingForward) {
-	      this.car.moveCarForward(wpm);
-	    } else if (this.typingBackward) {
-	      this.car.moveCarBackward(wpm);
-	    }
-	  }
-	  drawCar() {
-	    const redcar = document.getElementById('redcar');
-	    const greencar = document.getElementById('greencar');
-	    const ctx = document.getElementById('canvas').getContext('2d');
-	    if (this.id === 1) {
-	      this.car = new Car(50, 100, redcar, ctx);
-	    } else {
-	      this.car = new Car(50, 250, greencar, ctx);
-	    }
-	  }
-	}
-	module.exports = Player;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	class Car {
-	  constructor(x, y, img, ctx) {
-	    this.x = x;
-	    this.y = y;
-	    this.img = img;
-	    this.spd = 0;
-	    this.ctx = ctx;
-	    this.imgWidth = 110;
-	    this.imgHeight = 65;
-	  }
-	  moveCarForward(wpm) {
-	    this.updateSpd(wpm);
-	    this.x += this.spd;
-	    console.log(this.x);
-	    this.ctx.drawImage(this.img, this.x, this.y, this.imgWidth, this.imgHeight);
-	  }
-	  moveCarBackward(wpm) {
-	    this.updateSpd(wpm);
-	    this.x -= this.spd;
-	    this.ctx.drawImage(this.img, this.x, this.y, this.imgWidth, this.imgHeight);
-	  }
-	  drawRaceTrack() {
-	    const racetrack = document.getElementById('racetrack');
-	    const width = window.innerWidth;
-	    this.ctx.clearRect(0, 0, width, 350);
-	    this.ctx.drawImage(racetrack, 0, 0, width, 350);
-	  }
-	  updateSpd(wpm) {
-	    //can use switch-case statement here
-	    if (wpm === 0) {
-	      this.spd = 0;
-	    } else if (wpm <= 20) {
-	      this.spd = 0.2;
-	    } else if (wpm <= 40) {
-	      this.spd = 0.4;
-	    } else if (wpm <= 60) {
-	      this.spd = 0.6;
-	    } else if (wpm <= 80) {
-	      this.spd = 0.8;
-	    } else if (wpm <= 100) {
-	      this.spd = 1;
-	    } else {
-	      this.spd = 1.2;
-	    }
-	  }
-	}
-	module.exports = Car;
-
-/***/ },
-/* 8 */,
-/* 9 */,
-/* 10 */
+/* 4 */
 /***/ function(module, exports) {
 
 	class WordCalculation {
+	  constructor() {
+	    this.currentWPM = 0;
+	  }
 	  calculateWPM(time, text) {
 	    // time object
 	    const span = document.createElement('span');
 	    const currentTimeLeft = time.timer;
 	    const totalTime = time.initialTime;
-	    span.textContent = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60) + " wpm";
+	    this.currentWPM = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60);
+	    span.textContent = this.currentWPM + " wpm";
 	    span.className = 'wpm';
 	    return span;
 	  }
@@ -718,6 +494,267 @@
 	  }
 	}
 	module.exports = WordCalculation;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const moveCursor = __webpack_require__(6);
+
+	class Typing {
+	  constructor(game, wpm) {
+	    this.typedWord = "";
+	    this.cursorPos = 0;
+	    this.wordsArray = [];
+	    this.numCorrect = 0;
+	    this.numWrong = 0;
+	    this.game = game;
+	    this.wpm = wpm;
+	    this.animationId = null;
+	    this.noInput = true;
+
+	    const inputDiv = document.getElementById('user-typing');
+	    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
+	  }
+	  handleKeyEvent(e) {
+	    if (this.noInput) {
+	      this.game.startCountingTime();
+	    }
+	    this.noInput = false;
+	    const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
+	    const inputDiv = document.getElementById('user-typing');
+	    let lastWord = this.typedWord.split(" ")[this.cursorPos];
+	    let sentenceLength = inputDiv.innerHTML.length;
+	    // this.wordsArray = this.game.wordsArray;
+	    // console.log("before space", input.innerHTML)
+	    if (e.keyCode === 32) {
+	      // space
+	      this.highlightCurrentWord(this.cursorPos + 1);
+	      inputDiv.innerHTML = inputDiv.innerHTML.slice(0, sentenceLength - lastWord.length);
+	      this.typedWord += " "; // add space
+	      // console.log("before replacing", input.innerHTML)
+	      let elToRemove = inputDiv.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g);
+	      if (elToRemove) {
+	        elToRemove = elToRemove[0];
+	      }
+	      inputDiv.innerHTML = inputDiv.innerHTML.replace(elToRemove, "");
+	      // console.log(input.innerHTML)
+	      if (this.wordsArray[this.cursorPos] === lastWord) {
+	        this.numCorrect++;
+	        inputDiv.innerHTML += `<font color="gray">${ lastWord }</font>`;
+	      } else {
+	        this.numWrong++;
+	        inputDiv.innerHTML += `<font color="red">${ lastWord }</font>`;
+	        // console.log("after adding incorrect", input.innerHTML)
+	      }
+	      moveCursor(inputDiv);
+	      this.cursorPos++;
+	      document.execCommand('forecolor', false, '000000');
+	    } else if (e.keyCode === 8) {
+	      // backspace
+	      let lastChar = this.typedWord[this.typedWord.length - 1];
+	      let typedSentence = this.typedWord.split(' '); //input.textContent.trim().split(" ");
+	      let wordCount = typedSentence.length;
+	      if (lastChar === " " && typedSentence[wordCount - 2] === this.wordsArray[this.cursorPos - 1]) {
+	        this.numCorrect--;
+	        this.cursorPos--;
+	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	      } else if (lastChar === " " && typedSentence[wordCount - 2] !== this.wordsArray[this.cursorPos - 1]) {
+	        this.numWrong--;
+	        this.cursorPos--;
+	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	      } else if (lastChar === " ") {
+	        this.cursorPos--;
+	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	      } else {
+	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	      }
+	      console.log("backspace", inputDiv.innerHTML);
+	      this.highlightCurrentWord(this.cursorPos);
+	      // missing some sort of input.innerHTML slice method to account for bug
+	    } else if (alphabet.includes(e.key.toLowerCase())) {
+	      this.typedWord += e.key;
+	    } else {
+	      e.preventDefault();
+	    }
+
+	    // this.wpm.display(this.time, this.typedWord);
+	    // let x = this
+	    // requestAnimationFrame(function(x){
+	    //   console.log(x);
+	    //   x.moveCars(0, 1200/300, 0, 1);
+	    // })
+	    // this.game.gameOver(this.time.timer, this.numWrong);
+	  }
+	  highlightCurrentWord(position, wordsArray) {
+	    const textDiv = document.getElementById('text');
+	    this.wordsArray = wordsArray || this.wordsArray;
+	    let laterString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
+	    const currentWord = document.createElement('span');
+
+	    if (typeof this.wordsArray[position] !== 'undefined') {
+	      currentWord.textContent = this.wordsArray[position] + " ";
+	    } else {
+	      currentWord.textContent = "";
+	    }
+	    const highlightedElement = document.getElementsByClassName("highlight")[0];
+
+	    if (highlightedElement) {
+	      highlightedElement.nextSibling.textContent = "";
+	      textDiv.removeChild(highlightedElement);
+	    } else {
+	      textDiv.textContent = "";
+	    }
+	    currentWord.className = 'highlight';
+	    textDiv.appendChild(currentWord);
+	    textDiv.appendChild(document.createTextNode(laterString));
+	  }
+	}
+	module.exports = Typing;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	const moveCursor = el => {
+	    el.focus();
+	    if (typeof window.getSelection != "undefined" && typeof document.createRange != "undefined") {
+	        var range = document.createRange();
+	        range.selectNodeContents(el);
+	        range.collapse(false);
+	        var sel = window.getSelection();
+	        sel.removeAllRanges();
+	        sel.addRange(range);
+	    } else if (typeof document.body.createTextRange != "undefined") {
+	        var textRange = document.body.createTextRange();
+	        textRange.moveToElementText(el);
+	        textRange.collapse(false);
+	        textRange.select();
+	    }
+	};
+
+	module.exports = moveCursor;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Car = __webpack_require__(8);
+
+	class Player {
+	  constructor(id, socketId, maxTime) {
+	    this.id = id;
+	    this.socketId = socketId;
+	    this.typingForward = false;
+	    this.typingBackward = false;
+	    this.car = null;
+	    this.x = 10;
+	    this.wpm = 0;
+	    this.spd = 0;
+	  }
+	  updatePosition(wpm) {
+	    console.log('player', this.id);
+	    console.log('wpm', wpm);
+	    if (isNaN(wpm)) {
+	      wpm = 0;
+	    }
+	    console.log('after wpm', wpm);
+	    if (this.typingForward) {
+	      this.x += this.updateSpd(wpm) + 1;
+	    } else if (this.typingBackward) {
+	      this.x -= this.updateSpd(wpm) - 1;
+	    }
+	    console.log('x', this.x);
+	    console.log('**************');
+	    return this.x;
+	  }
+	  updateSpd(wpm) {
+	    //can use switch-case statement here
+	    if (wpm === 0) {
+	      this.spd = 0;
+	    } else if (wpm <= 20) {
+	      this.spd = 1;
+	    } else if (wpm <= 40) {
+	      this.spd = 2;
+	    } else if (wpm <= 60) {
+	      this.spd = 3;
+	    } else if (wpm <= 80) {
+	      this.spd = 4;
+	    } else if (wpm <= 100) {
+	      this.spd = 5;
+	    } else {
+	      this.spd = 6;
+	    }
+	    console.log('spd', this.spd);
+	    return this.spd;
+	  }
+	  assignCar() {
+	    const redcar = document.getElementById('redcar');
+	    const greencar = document.getElementById('greencar');
+	    const ctx = document.getElementById('canvas').getContext('2d');
+	    if (this.id === 1) {
+	      this.car = new Car(this.x, 50, redcar, ctx);
+	    } else {
+	      this.car = new Car(this.x, 200, greencar, ctx);
+	    }
+	  }
+	}
+	module.exports = Player;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	class Car {
+	  constructor(x, y, img, ctx) {
+	    this.x = x;
+	    this.y = y;
+	    this.img = img;
+	    this.spd = 0;
+	    this.ctx = ctx;
+	    this.imgWidth = 110;
+	    this.imgHeight = 65;
+	  }
+	  moveCarForward(wpm) {
+	    this.updateSpd(wpm);
+	    this.x += this.spd;
+	    return this.x;
+	  }
+	  moveCarBackward(wpm) {
+	    this.updateSpd(wpm);
+	    this.x -= this.spd;
+	    return this.x;
+	    // this.ctx.drawImage(this.img, this.x, this.y, this.imgWidth, this.imgHeight);
+	  }
+	  drawRaceTrack() {
+	    const racetrack = document.getElementById('racetrack');
+	    const width = window.innerWidth;
+	    this.ctx.clearRect(0, 0, width, 350);
+	    this.ctx.drawImage(racetrack, 0, 0, width, 350);
+	  }
+	  drawCar(x) {
+	    this.ctx.drawImage(this.img, x, this.y, this.imgWidth, this.imgHeight);
+	  }
+	  updateSpd(wpm) {
+	    //can use switch-case statement here
+	    if (wpm === 0) {
+	      this.spd = 0;
+	    } else if (wpm <= 20) {
+	      this.spd = 0.2;
+	    } else if (wpm <= 40) {
+	      this.spd = 0.4;
+	    } else if (wpm <= 60) {
+	      this.spd = 0.6;
+	    } else if (wpm <= 80) {
+	      this.spd = 0.8;
+	    } else if (wpm <= 100) {
+	      this.spd = 1;
+	    } else {
+	      this.spd = 1.2;
+	    }
+	  }
+	}
+	module.exports = Car;
 
 /***/ }
 /******/ ]);
