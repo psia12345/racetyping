@@ -1,13 +1,19 @@
 const express = require('express');
+const socketIO = require('socket.io');
 const app = express();
-const server = require('http').Server(app);
-
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
+// const server = require('http').Server(app);
+const PORT = process.env.PORT || 2000;
+const server = app.get('/', (req, res) =>
+  res.sendFile(__dirname + '/client/index.html')).listen(
+    PORT, () => console.log(`LISTENING on ${ PORT}`));
+// app.get('/', (req, res) => {
+//   res.sendFile(__dirname + '/client/index.html');
+// });
 app.use('/client', express.static(__dirname + '/client'));
-server.listen(2000);
-console.log('server started');
+// server.listen(2000);
+// console.log('server started');
+
+const io = socketIO(server, {});
 
 const SOCKET_LIST = {};
 const PLAYER_LIST = {};
@@ -15,7 +21,6 @@ let waitingPlayer;
 let pack;
 
 const Player = require('./client/javascripts/player');
-const io = require('socket.io')(server, {});
 
 io.sockets.on('connection', socket => {
   socket.id = Math.random();
