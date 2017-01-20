@@ -11,8 +11,6 @@ class Game{
     this.time = new Timer(maxTime, this);
     this.wpm = new WordCalculation;
     this.typing;
-
-    // document.addEventListener('click', this.handleClick.bind(this))
   }
   initializeGame(numWords, ...players){
     const inputDiv = document.getElementById('user-typing');
@@ -37,10 +35,12 @@ class Game{
     ctx.drawImage(greencar, 10, 200, 110, 65);
   }
   startCountingTime(){
+
     this.time.decrementSeconds(this);
     this.wpm.calculateWPM(this.time, this.typing.typedWord);
     // console.log('game', this);
     this.wpm.display(this.time, this.typing.typedWord);
+
     this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
   }
   gameOver(time, numWrong){
@@ -54,28 +54,27 @@ class Game{
     modal.style.display = 'block';
     this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numWrong);
   }
+  // continueGame(){
+  //   const ctx = document.getElementById('canvas').getContext('2d');
+  //   const WIDTH = window.innerWidth;
+  //   let player1 = this.players[0];
+  //   let player2 = this.players[1];
+  //   ctx.clearRect(0, 0, WIDTH, 350);
+  //   player1.car.drawRaceTrack();
+  //   let x;
+  //   let forward = this.typing.typingForward;
+  //   let backward = this.typing.typingBackward;
+  //   this.players.forEach( player => {
+  //     x = player.updatePosition(this.wpm.currentWPM, forward, backward)
+  //   })
+  //   player1.car.drawCar(x);
+  //   player2.car.drawCar(x);
+  // }
   generateWords(numWords){
     const textDiv = document.getElementById('text');
     let words = randomWords(numWords).join(' ');
     this.wordsArray = this.wordsArray.concat(words.split(' '));
     textDiv.innerHTML += `${words} `;
-  }
-  moveCars(){
-    const WIDTH = window.innerWidth;
-    // debugger;
-    this.players[0].car.drawRaceTrack();
-    if (this.players[0].typingForward){
-      this.players[0].car.moveCarForward(this.wpm.currentWPM)
-    } else if (this.players[0].typingBackward){
-      this.players[0].car.moveCarForward(this.wpm.currentWPM)
-    }
-
-    if (this.players[1].typingForward){
-      this.players[1].car.moveCarForward(this.wpm.currentWPM)
-    } else if (this.players[1].typingBackward){
-      this.players[1].car.moveCarForward(this.wpm.currentWPM)
-    }
-
   }
   handleClick(e){
     if (e.target.id === 'end-game' || e.target.id=== 'game-controller'){

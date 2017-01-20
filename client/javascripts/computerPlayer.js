@@ -1,28 +1,30 @@
 const Car = require('./car');
 
 class Player {
-  constructor(id, socketId, maxTime){
+  constructor(id, maxTime, level){
     this.id = id;
-    this.socketId = socketId;
     this.typingForward = false;
     this.typingBackward = false;
     this.car = null;
     this.x = 10;
     this.wpm = 0;
     this.spd = 0;
+    this.level = level;
   }
-  updatePosition(wpm, forward, backward){
+  updatePosition(wpm){
+    // console.log('player', this.id)
+    // console.log('wpm', wpm);
     if (isNaN(wpm)){
       wpm = 0
     }
+    // console.log('after wpm', wpm);
     if(this.typingForward){
-      console.log('**************');
       this.x += this.updateSpd(wpm) + 1;
     } else if (this.typingBackward) {
       this.x -= this.updateSpd(wpm) - 1;
     }
-    console.log(this.id)
-    console.log('x', this.x);
+    // console.log('x', this.x);
+    // console.log('**************');
     return this.x;
   }
   updateSpd(wpm){
@@ -42,7 +44,7 @@ class Player {
     } else {
       this.spd = 6;
     }
-    console.log('spd', this.spd);
+    // console.log('spd', this.spd);
     return this.spd;
   }
   assignCar(){

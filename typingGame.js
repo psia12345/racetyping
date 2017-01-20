@@ -17,6 +17,7 @@ const io = socketIO(server, {});
 
 const SOCKET_LIST = {};
 const PLAYER_LIST = {};
+// const GAME_LIST = {};
 let waitingPlayer;
 let pack;
 
@@ -24,17 +25,22 @@ const Player = require('./client/javascripts/player');
 
 io.sockets.on('connection', socket => {
   socket.id = Math.random();
+  console.log('server started');
   SOCKET_LIST[socket.id] = socket;
   socket.on('newGame', () => {
+    // let gameId = data.gameId;
     if (waitingPlayer){
       let player = new Player(2, socket.id);
       PLAYER_LIST[socket.id] = player;
+      // let prevSocket = GAME_LIST[data.gameId];
+      // GAME_LIST[data.gameId] = Object.assign({}, prevSocket, socket);
       notify(waitingPlayer, socket);
       waitingPlayer = null;
     } else {
       waitingPlayer = socket;
       let player = new Player(1, socket.id)
       PLAYER_LIST[socket.id] = player;
+      // GAME_LIST[data.gameId] = socket;
       socket.emit('msg', 'waiting for another player');
     }
     socket.on('typedForward', data => {
@@ -47,6 +53,7 @@ io.sockets.on('connection', socket => {
         player.wpm = data.wpm;
       }
       pack = [];
+      console.log("players", PLAYER_LIST);
       for (let i in PLAYER_LIST){
         let player = PLAYER_LIST[i];
         player.updatePosition(player.wpm);
@@ -57,20 +64,22 @@ io.sockets.on('connection', socket => {
           typingBackward: player.typingBackward
         })
       }
+      setTimeout( () => {
+        for (let i in SOCKET_LIST){
+          let socket = SOCKET_LIST[i];
+          socket.emit('newPosition', pack);
+        }
+      }, 1000/25)
+
+      // console.log(pack);
     })
     socket.on('disconnect', () => {
-    delete SOCKET_LIST[socket.id];
-    delete PLAYER_LIST[socket.id];
-  })
+      delete SOCKET_LIST[socket.id];
+      delete PLAYER_LIST[socket.id];
+
+    })
   });
 })
-
-setInterval( () => {
-  for (let i in SOCKET_LIST){
-    let socket = SOCKET_LIST[i];
-    socket.emit('newPosition', pack);
-  }
-}, 1000/25);
 
 function notify(...sockets){
   sockets.forEach(socket => {

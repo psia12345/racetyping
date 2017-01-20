@@ -10,9 +10,36 @@
   <body>
     <div id="splash-page">
       <h1>Race Typing</h1>
+      <div id='instructionmodal' class='modal'>
+        <div class='modal-content'>
+          <h1>Race Typing</h1>
+            <p>The goal of the game is to type as fast and as accurately as you can within the given time limit. </p>
+          <h2>Players</h2>
+            <p>You can pick either single player game or 2 player game.</p>
+          <h3>Single Player</h3>
+            <p>In single player game, you will be racing against a computer player. You can pick the difficulties of computer player (Easy, Medium, Hard, Extra Hard).</p>
+          <h3>2 Players</h3>
+            <p>You can create a new 2 player game. Once you created the game, you have to wait until there is another player to join you. Alternatively, you can also</p>
+        </div>
+      </div>
       <div id="option-buttons">
-        <button>Instructions</button>
-        <button class="new-game">New Game</button>
+        <button id="instructions">Instructions</button>
+        <div class="pick-player">
+          <button class="single-game">Single Player Game</button>
+          <button class="new-game">2 Player Game</button>
+        </div>
+        <select id="mode">Select Time
+          <option value="1">Easy</option>
+          <option value="3">Medium</option>
+          <option value="5">Hard</option>
+          <option value="10">Extremely Hard</option>
+        </select>
+        <div>
+          <div class="gameid">
+            <input type="text" id="gameid" />
+            <button class="join-game">Join Game</button>
+          </div>
+        </div>
         <select id="time">Select Time
           <option value="1">1 minute</option>
           <option value="3">3 minutes</option>
@@ -42,6 +69,7 @@
           </div>
         </div>
       </nav>
+
       <div id='modal' class='modal'>
         <div class='modal-content'>
           <p>Results:</p>
@@ -78,7 +106,6 @@
     </div>
     <script type="text/javascript" src="https://cdn.socket.io/socket.io-1.4.4.js"></script>
     <script type="text/javascript" src="./client/bundle.js"></script>
-    <!-- <script type="text/javascript" src="javascripts/car.js"></script> -->
   </body>
 
 </html>

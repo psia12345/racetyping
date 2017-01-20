@@ -44,74 +44,93 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	//entry file for client
 	const socket = io();
 	const Game = __webpack_require__(1);
 	const Player = __webpack_require__(7);
+	const socket2 = io();
 
-	const inputDiv = document.getElementById('user-typing');
+	//canvas
 	const divCanvasContainer = document.getElementById('canvas-container');
 	const canvas = document.getElementById('canvas');
 	const WIDTH = window.innerWidth;
 	canvas.width = WIDTH;
 	const ctx = canvas.getContext('2d');
+	//Game mode
 	const newGame = document.getElementsByClassName('new-game')[0];
+	const singleGame = document.getElementsByClassName('single-game')[0];
+	//game
+	const inputDiv = document.getElementById('user-typing');
+	const time = document.getElementById('time');
+	//cars
+	const redcar = document.getElementById('redcar');
+	const greencar = document.getElementById('greencar');
+	//game Views
+	const gameView = document.getElementById('the-game');
+	const waiting = document.getElementById('waiting');
+	const splashPage = document.getElementById('splash-page');
+	const instruction = document.getElementById('instructions');
+	const instructionModal = document.getElementById('instructionmodal');
+
 	let timeLimit;
 	let player1;
 	let player2;
 	let game;
-	newGame.addEventListener('click', () => {
-	  const splashPage = document.getElementById('splash-page');
-	  splashPage.style.display = 'none';
 
-	  const waiting = document.getElementById('waiting');
-	  waiting.style.display = 'none';
-
-	  const time = document.getElementById('time');
-	  timeLimit = parseInt(time.options[time.selectedIndex].value) * 5; // multiply by 60 to make into second
-
-	  const gameView = document.getElementById('the-game');
-	  gameView.style.display = 'unset';
-
-	  socket.emit('newGame');
+	instruction.addEventListener('click', () => {
+	  instructionModal.style.display = 'block';
 	});
 
+	singleGame.addEventListener('click', () => {
+	  let id = Math.random().toString(36).substring(3, 10);
+	  socket.emit('newGame');
+	  // socket.join(id);
+	  socket2.emit('newGame');
+	  // socket2.join(id);
+	});
+
+	newGame.addEventListener('click', () => {
+	  startGameSetup();
+	  let id = Math.random().toString(36).substring(3, 10);
+	  socket.emit('newGame', { gameId: id });
+	});
+
+	const enterGame = document.getElementsByClassName('join-game')[0];
+	const gameId = document.getElementById('gameid');
+	enterGame.addEventListener('click', () => {});
+	// const joinGame = document.getElementsByClassName('join-game')[1];
+	// joinGame.addEventListener('click', ()=> {
+	//   startGameSetup();
+	//   let id = gameid.value;
+	//   socket.emit('joinGame', {gameId: id});
+	// })
+
+
+	function startGameSetup() {
+	  splashPage.style.display = 'none';
+	  waiting.style.display = 'none';
+	  gameView.style.display = 'unset';
+	  timeLimit = parseInt(time.options[time.selectedIndex].value) * 5; // multiply by 60 to make into second
+	}
 	socket.on('msg', message);
 
 	function message(msg) {
+	  console.log(msg);
 	  if (msg === "Start Typing") {
-	    const waiting = document.getElementById('waiting');
-	    waiting.style.display = 'none';
-	    const gameView = document.getElementById('the-game');
-	    gameView.style.display = 'unset';
+	    startGameSetup();
 
-	    const redcar = document.getElementById('redcar');
-	    const greencar = document.getElementById('greencar');
 	    player1 = new Player(1, 10, 50, redcar, ctx);
 	    player2 = new Player(2, 10, 200, greencar, ctx);
 	    game = new Game(timeLimit, ctx);
-	    console.log("game starts");
 	    game.initializeGame(20, player1, player2);
 	  } else {
-	    const gameView = document.getElementById('the-game');
 	    gameView.style.display = 'none';
-
-	    const waiting = document.getElementById('waiting');
 	    waiting.style.display = 'unset';
 	  }
 	}
-	// socket.on('newPosition', pack => {
-	//   for (let i in pack){
-	//     if (pack[i].typingForward) {
-	//       if (pack[i].id === 1){
-	//         console.log(player1.car)
-	//       }
-	//     }
-	//   }
-	// })
 
 	socket.on('newPosition', pack => {
-	  console.log(player1);
+	  console.log(pack);
+
 	  if (typeof player1 === 'undefined' || typeof player2 === 'undefined') {
 	    return;
 	  } else if (player1.car === null || player2.car === null) {
@@ -132,135 +151,13 @@
 	  });
 	};
 
-	inputDiv.onkeyup = e => {
-	  socket.emit('typedForward', {
-	    inputId: 'forward',
-	    state: false,
-	    wpm: game.wpm.currentWPM
-	  });
-	};
-
-	// document.addEventListener('keydown', (e)=> {
-	//   if (e.keyCode === 68){
-	//     socket.emit('keyPress', { inputId: 'right', state: true})
-	//   }
-	// })
-	// document.addEventListener('keyup', (e)=> {
-	//   if (e.keyCode === 68){
-	//     socket.emit('keyPress', { inputId: 'right', state: false})
-	//   }
-	// })
-	//
-	// socket.on('newPositions', (data) => {
-	//   ctx.clearRect(0, 0, 500, 500);
-	//   for (let i = 0; i < data.length; i++){
-	//     console.log(data[i]);
-	//     ctx.fillText(data[i].number, data[i].x, data[i].y);
-	//   }
-	// });
-
-
-	// // const Game = require('./game');
-	//
-	// import highlightCurrentWord from './highlightText';
-	//
-	// const textDiv = document.getElementById('text');
-	// const modal = document.getElementById('modal');
-	//
-	// let cursorPos = 0;
-	// let numWrong = 0;
-	// let numCorrect = 0;
-	// let wordsArray = textDiv.textContent.split(' ')
-	// let laterString = "";
-	// let typedWord = "";
-	// let intervalId;
-	// // let wpm = new analyzeWPM;
-	//
-	// const input = document.getElementById('user-typing');
-	// input.addEventListener('keydown', e => {
-	//
-	//   const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
-	//   let lastWord = typedWord.split(" ")[cursorPos];
-	//   let sentenceLength = input.innerHTML.length;
-	//   // wpm.display(time.timer, input.textContent);
-	//
-	//   if (e.keyCode === 32) { // space
-	//     highlightCurrentWord(cursorPos + 1, wordsArray);
-	//     input.innerHTML = input.innerHTML.slice(0, sentenceLength - lastWord.length)
-	//     typedWord += " "; // add space
-	//     if (wordsArray[cursorPos] === lastWord){
-	//       numCorrect++;
-	//       input.innerHTML += `<font color="gray">${lastWord}</font>`;
-	//     } else {
-	//       numWrong++;
-	//       input.innerHTML += `<font color="red">${lastWord}</font>`;
-	//     }
-	//     moveCursor(input);
-	//     cursorPos++;
-	//     document.execCommand('forecolor', false, '000000');
-	//
-	//   } else if (e.keyCode === 8){ // backspace
-	//     let lastChar = typedWord[typedWord.length - 1];
-	//     let typedSentence = typedWord.split(' '); //input.textContent.trim().split(" ");
-	//     let wordCount = typedSentence.length;
-	//     if (lastChar === " " && typedSentence[wordCount - 2] === wordsArray[cursorPos - 1]){
-	//       numCorrect--;
-	//       cursorPos--;
-	//       typedWord = typedWord.slice(0, typedWord.length - 1);
-	//     } else if (lastChar === " " && typedSentence[wordCount - 2] !== wordsArray[cursorPos - 1]) {
-	//       numWrong--;
-	//       cursorPos--;
-	//       typedWord = typedWord.slice(0, typedWord.length - 1);
-	//     } else if (lastChar === " "){
-	//       cursorPos--;
-	//       typedWord = typedWord.slice(0, typedWord.length - 1);
-	//     } else {
-	//       typedWord = typedWord.slice(0, typedWord.length - 1);
-	//     }
-	//     highlightCurrentWord(cursorPos, wordsArray);
-	// // missing some sort of input.innerHTML slice method to account for bug
-	//   } else if (alphabet.includes(e.key.toLowerCase())){
-	//     typedWord += e.key;
-	//   } else {
-	//     e.preventDefault();
-	//   }
-	//   // game.gameOver();
-	// });
-	//
-	// // const highlightingWords = (word, correctWord) => {
-	// //   // let text = input.innerHTML.split(' ');
-	// //   // let textContent = text.splice(0, text.length - 1).join(' ');
-	// //   // debugger;
-	// //   // input.value = "";
-	// //   // input.textContent = input.textContent.replace(word, "");
-	// //   // input.innerHTML = "";
-	// //   let highlight;
-	// //   if (word === correctWord){
-	// //     highlight = word;
-	// //   } else {
-	// //     // highlight = document.createElement('span');
-	// //     // highlight.textContent = word + " ";
-	// //     // highlight.className = 'incorrect-highlight';
-	// //     highlight = `<i>${word}</i>`;
-	// //   }
-	// //   return highlight;
-	// // }
-	//
-	//
-	//
-	// // input.addEventListener('focus', e => {
-	// //   if (laterString === "") {
-	// //     laterString = pText.innerHTML.slice(cursorPos, numLetters);
-	// //     initializeGame();
-	// //   }
-	// //   pText.innerHTML = pText.innerHTML.replace(laterString, "");
-	// //   const span = document.createElement('span');
-	// //   span.innerHTML = laterString[0];
-	// //   span.className = "highlight";
-	// //   pText.appendChild(span);
-	// //   let stringToAppend = laterString.replace(laterString[0], ""); ;
-	// //   pText.appendChild(document.createTextNode(stringToAppend));
-	// // })
+	// inputDiv.onkeyup = e => {
+	//   socket.emit('typedForward', {
+	//     inputId: 'forward',
+	//     state: false,
+	//     wpm: game.wpm.currentWPM
+	//   })
+	// }
 
 /***/ },
 /* 1 */
@@ -279,8 +176,6 @@
 	    this.time = new Timer(maxTime, this);
 	    this.wpm = new WordCalculation();
 	    this.typing;
-
-	    // document.addEventListener('click', this.handleClick.bind(this))
 	  }
 	  initializeGame(numWords, ...players) {
 	    const inputDiv = document.getElementById('user-typing');
@@ -304,10 +199,12 @@
 	    ctx.drawImage(greencar, 10, 200, 110, 65);
 	  }
 	  startCountingTime() {
+
 	    this.time.decrementSeconds(this);
 	    this.wpm.calculateWPM(this.time, this.typing.typedWord);
 	    // console.log('game', this);
 	    this.wpm.display(this.time, this.typing.typedWord);
+
 	    this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
 	  }
 	  gameOver(time, numWrong) {
@@ -321,27 +218,27 @@
 	    modal.style.display = 'block';
 	    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numWrong);
 	  }
+	  // continueGame(){
+	  //   const ctx = document.getElementById('canvas').getContext('2d');
+	  //   const WIDTH = window.innerWidth;
+	  //   let player1 = this.players[0];
+	  //   let player2 = this.players[1];
+	  //   ctx.clearRect(0, 0, WIDTH, 350);
+	  //   player1.car.drawRaceTrack();
+	  //   let x;
+	  //   let forward = this.typing.typingForward;
+	  //   let backward = this.typing.typingBackward;
+	  //   this.players.forEach( player => {
+	  //     x = player.updatePosition(this.wpm.currentWPM, forward, backward)
+	  //   })
+	  //   player1.car.drawCar(x);
+	  //   player2.car.drawCar(x);
+	  // }
 	  generateWords(numWords) {
 	    const textDiv = document.getElementById('text');
 	    let words = randomWords(numWords).join(' ');
 	    this.wordsArray = this.wordsArray.concat(words.split(' '));
 	    textDiv.innerHTML += `${ words } `;
-	  }
-	  moveCars() {
-	    const WIDTH = window.innerWidth;
-	    // debugger;
-	    this.players[0].car.drawRaceTrack();
-	    if (this.players[0].typingForward) {
-	      this.players[0].car.moveCarForward(this.wpm.currentWPM);
-	    } else if (this.players[0].typingBackward) {
-	      this.players[0].car.moveCarForward(this.wpm.currentWPM);
-	    }
-
-	    if (this.players[1].typingForward) {
-	      this.players[1].car.moveCarForward(this.wpm.currentWPM);
-	    } else if (this.players[1].typingBackward) {
-	      this.players[1].car.moveCarForward(this.wpm.currentWPM);
-	    }
 	  }
 	  handleClick(e) {
 	    if (e.target.id === 'end-game' || e.target.id === 'game-controller') {
@@ -427,10 +324,11 @@
 	      this.width = 0;
 	    }
 	    this.displayTimer();
+	    this.game.wpm.calculateWPM(this, this.game.typing.typedWord);
+
 	    if (this.timer === 0) {
 	      this.game.gameOver(this.timer, this.game.typing.numWrong);
 	    }
-	    this.game.wpm.calculateWPM(this, this.game.typing.typedWord);
 	  }
 	}
 	module.exports = Timer;
@@ -652,20 +550,18 @@
 	    this.wpm = 0;
 	    this.spd = 0;
 	  }
-	  updatePosition(wpm) {
-	    console.log('player', this.id);
-	    console.log('wpm', wpm);
+	  updatePosition(wpm, forward, backward) {
 	    if (isNaN(wpm)) {
 	      wpm = 0;
 	    }
-	    console.log('after wpm', wpm);
 	    if (this.typingForward) {
+	      console.log('**************');
 	      this.x += this.updateSpd(wpm) + 1;
 	    } else if (this.typingBackward) {
 	      this.x -= this.updateSpd(wpm) - 1;
 	    }
+	    console.log(this.id);
 	    console.log('x', this.x);
-	    console.log('**************');
 	    return this.x;
 	  }
 	  updateSpd(wpm) {

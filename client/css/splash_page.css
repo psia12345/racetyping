@@ -29,7 +29,10 @@
   border: none;
   margin: 20px;
 }
-
+#gameid{
+  display: none;
+  font-size: 35px;
+}
 #waiting{
   display: none;
   color: white;
