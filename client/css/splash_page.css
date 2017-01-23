@@ -1,3 +1,26 @@
+.pick-player{
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  width: 75%;
+  margin: 30px auto;
+  flex-wrap: wrap;
+}
+.pick-player div{
+  background-color: white;
+  padding: 60px;
+  border-radius: 5px;
+  font-size: 30px;
+  margin: 30px;
+  font-family: sans-serif;
+}
+
+
+
+
+
+
+
 #splash-page h1{
   color: white;
   font-size: 100px;
@@ -30,7 +53,6 @@
   margin: 20px;
 }
 #gameid{
-  display: none;
   font-size: 35px;
 }
 #waiting{

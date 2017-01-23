@@ -13,6 +13,7 @@ class Game{
     this.typing;
   }
   initializeGame(numWords, ...players){
+    // console.log(player);
     const inputDiv = document.getElementById('user-typing');
     const racetrack = document.getElementById('racetrack');
     const redcar = document.getElementById('redcar');
@@ -20,6 +21,8 @@ class Game{
     const WIDTH = window.innerWidth;
 
     this.typing = new Typing(this, this.wpm);
+    // player.assignCar();
+    // this.players << player;
     this.players = players;
     this.players.forEach( player => player.assignCar() )
 

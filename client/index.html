@@ -3,50 +3,77 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="./client/css/canvas_style.css">
-    <link rel="stylesheet" type="text/css" href="./client/css/modal.css">
     <link rel="stylesheet" type="text/css" href="./client/css/splash_page.css">
+    <link rel="stylesheet" type="text/css" href="./client/css/modal.css">
     <title>Race Typing</title>
   </head>
   <body>
     <div id="splash-page">
       <h1>Race Typing</h1>
-      <div id='instructionmodal' class='modal'>
+      <div id='one-p-instruction' class='modal'>
         <div class='modal-content'>
-          <h1>Race Typing</h1>
+          <h2>Race Typing</h2>
             <p>The goal of the game is to type as fast and as accurately as you can within the given time limit. </p>
-          <h2>Players</h2>
-            <p>You can pick either single player game or 2 player game.</p>
-          <h3>Single Player</h3>
+          <h3>1 Player Instruction:</h3>
             <p>In single player game, you will be racing against a computer player. You can pick the difficulties of computer player (Easy, Medium, Hard, Extra Hard).</p>
-          <h3>2 Players</h3>
-            <p>You can create a new 2 player game. Once you created the game, you have to wait until there is another player to join you. Alternatively, you can also</p>
+            <div id="proceed-1p" class="button">Proceed to 1 Player Game</div>
         </div>
       </div>
-      <div id="option-buttons">
-        <button id="instructions">Instructions</button>
-        <div class="pick-player">
-          <button class="single-game">Single Player Game</button>
-          <button class="new-game">2 Player Game</button>
+      <div id='two-p-instruction' class='modal'>
+        <div class='modal-content'>
+          <h2>Race Typing</h2>
+          <p>The goal of the game is to type as fast and as accurately as you can within the given time limit. </p>
+          <h3>2 Players Instruction:</h3>
+          <p>You can create a new 2 player game. Once you created the game, you have to wait until there is another player to join you. Alternatively, you can also</p>
+          <div id="proceed-2p" class="button">Proceed to 2 Player Game</div>
         </div>
-        <select id="mode">Select Time
+      </div>
+      <div id='one-p-page2' class='modal'>
+        <div class='modal-content'>
+          <div class='content'>
+            <div class="level">
+              <h3>Select Difficulties:</h3>
+              <input type='radio' value='easy' checked name='difficulty' id='easy-1'><label for='easy-1'>Easy<br/><p>Easy Mode: Computer player will type at 25 wpm.</p></label>
+              <input type='radio' value='med' name='difficulty' id='med-1'><label for='med-1'>Medium<br/><p>Medium Mode: Computer player will type at 50 wpm.</p></label>
+
+              <input type='radio' value='hard' name='difficulty' id='hard-1'><label for='hard-1'>Hard<br/>
+              <p>Hard Mode: Computer player will type at 80 wpm.</p></label>
+            </div>
+            <div class="time">
+              <h3>Select Time:</h3>
+              <input type='radio' value='1' name='time' id='1-1' checked><label for='1-1'>1 Minute</label><br/>
+              <input type='radio' value='3' name='time' id='3-1'><label for='3-1'>3 Minutes</label><br/>
+              <input type='radio' value='5' name='time' id='5-1'><label for='5-1'>5 Minutes</label><br/>
+              <input type='radio' value='10' name='time' id='10-1'><label for='10-1'>10 Minutes</label><br/>
+            </div>
+          </div>
+          <div id="start-1p" class="button">Start Game</div>
+        </div>
+      </div>
+      <!-- <div id="option-buttons"> -->
+        <div class="pick-player">
+          <div class="single-game">1 Player</div>
+          <div class="two-game">2 Players</div>
+        </div>
+        <!-- <select id="mode">Select Time
           <option value="1">Easy</option>
           <option value="3">Medium</option>
           <option value="5">Hard</option>
           <option value="10">Extremely Hard</option>
-        </select>
-        <div>
+        </select> -->
+        <!-- <div>
           <div class="gameid">
             <input type="text" id="gameid" />
             <button class="join-game">Join Game</button>
           </div>
-        </div>
-        <select id="time">Select Time
+        </div> -->
+        <!-- <select id="time">Select Time
           <option value="1">1 minute</option>
           <option value="3">3 minutes</option>
           <option value="5">5 minutes</option>
           <option value="10">10 minutes</option>
         </select>
-      </div>
+      </div> -->
 
     </div>
     <div id="waiting">Waiting for a second player to join</div>
