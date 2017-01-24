@@ -154,6 +154,7 @@ const modal2 = document.getElementById('two-p-instruction');
 const onePlayer = document.getElementById('proceed-1p');
 const twoPlayers = document.getElementById('proceed-2p');
 const singleGame = document.getElementById('start-1p');
+const twoPlayerOptions = document.getElementsByClassName('option-2p');
 
 const socket = io();
 const socket2 = io();
@@ -200,6 +201,20 @@ document.addEventListener('click', e => {
     modal2.style.display = 'none';
     const nextPage = document.getElementById('two-p-page2');
     nextPage.style.display = 'block';
+    let j;
+    for (let i in twoPlayerOptions){
+      twoPlayerOptions[i].onclick = function(e){
+        if (e.target == twoPlayerOptions[i] || e.target == twoPlayerOptions[i].children[0] || e.target == twoPlayerOptions[i].children[1]){
+          if (j){
+            twoPlayerOptions[j].className = 'option-2p';
+            twoPlayerOptions[j].children[2].className = 'hidden option-buttons'
+          }
+          twoPlayerOptions[i].className = 'selected option-2p';
+          twoPlayerOptions[i].children[2].className = 'option-buttons'
+          j = i;
+        }
+      }
+    }
   } else if ( e.target == singleGame ){
     level = document.querySelector('input[name="difficulty"]:checked').value;
     timeLimit = document.querySelector('input[name="time"]:checked').value;
@@ -207,6 +222,30 @@ document.addEventListener('click', e => {
     let id = Math.random().toString(36).substring(3, 10);
     socket.emit('single player game', {gameId: id });
     socket2.emit('join available game', {gameId: id, type: 'computer'});
+  } else if ( e.target.className === 'option-buttons'){
+    if (e.target.textContent === 'Create New Game Room'){
+      console.log('create new game');
+      let id = Math.random().toString(36).substring(3, 10);
+      console.log(id);
+      socket.emit('new game', {gameId: id})
+    } else if (e.target.textContent === 'Join Game'){
+      let gameId = e.target.previousElementSibling;
+      socket.emit('join game', gameId.value, data => {
+          if (data){
+            console.log("in the game")
+            // successfully joined game
+            // start the game
+          } else {
+            let msg = 'The game room ID that you entered either doesn\'t exist yet or the room is already full. Please Try again.'
+            // no game room exits, try again or initiate a new game room
+            console.log(msg);
+          }
+        })
+        gameId.value = ""
+    } else if (e.target.textContent === 'Join Random Game'){
+      socket.emit('join available game', {type: 'player'})
+
+    }
   }
 })
 window.onclick = function(e){
@@ -225,9 +264,8 @@ function startGameSetup(){
 }
 socket.on('msg', message);
 
-function message(data){
-  if (data.msg === "Start Typing"){
-    console.log('player list', data.players);
+function message(msg){
+  if (msg === "Start Typing"){
     startGameSetup();
 
     player1 = new Player(1, 10, 50, redcar, ctx);
@@ -236,6 +274,7 @@ function message(data){
     game.initializeGame(20, player1, player2);
 
   } else {
+    splashPage.style.display = 'none';
     gameView.style.display = 'none';
     waiting.style.display = 'unset';
   }
