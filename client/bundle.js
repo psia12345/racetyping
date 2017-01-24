@@ -262,12 +262,12 @@
 	      };
 	    }
 	  } else if (e.target == singleGame) {
-	    level = document.querySelector('input[name="difficulty"]:checked').value;
+	    let level = document.querySelector('input[name="difficulty"]:checked').value;
 	    timeLimit = document.querySelector('input[name="time"]:checked').value;
 	    console.log('start single player game');
 	    let id = Math.random().toString(36).substring(3, 10);
 	    socket.emit('single player game', { gameId: id });
-	    socket2.emit('join available game', { gameId: id, type: 'computer' });
+	    socket2.emit('join available game', { gameId: id, type: 'computer', level: level });
 	  } else if (e.target.className === 'option-buttons') {
 	    if (e.target.textContent === 'Create New Game Room') {
 	      console.log('create new game');
@@ -328,6 +328,13 @@
 	  socket.emit('typedForward', {
 	    inputId: 'forward',
 	    state: true,
+	    wpm: game.wpm.currentWPM
+	  });
+	};
+	inputDiv.onkeyup = e => {
+	  socket.emit('typedForward', {
+	    inputId: 'forward',
+	    state: false,
 	    wpm: game.wpm.currentWPM
 	  });
 	};
