@@ -40,9 +40,9 @@ class Game{
   startCountingTime(){
 
     this.time.decrementSeconds(this);
-    this.wpm.calculateWPM(this.time, this.typing.typedWord);
+    // this.wpm.adjustedWPM(this.time, this.typing.typedWord, this.typing.numWrong);
     // console.log('game', this);
-    this.wpm.display(this.time, this.typing.typedWord);
+    // this.wpm.display(this.time, this.typing.typedWord);
 
     this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
   }
@@ -55,7 +55,7 @@ class Game{
     inputDiv.blur();
     const modal = document.getElementById('modal');
     modal.style.display = 'block';
-    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numWrong);
+    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numCorrect, this.typing.numWrong);
   }
   // continueGame(){
   //   const ctx = document.getElementById('canvas').getContext('2d');

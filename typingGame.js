@@ -17,7 +17,6 @@ const Player = require('./playerServer');
 const Computer = require('./computerPlayer');
 let pack;
 
-
 io.sockets.on('connection', socket => {
   socket.id = Math.random();
   console.log('server started');
@@ -28,24 +27,20 @@ io.sockets.on('connection', socket => {
   })
   socket.on('join available game', data => {
     if (data.type === 'computer'){
-      // need to set up computer player to join
       setup(socket, data.gameId, 'join', true, data.level)
     } else {
-      // there's no gameID specified but there are waiting player
       if (Object.keys(WAITING_PLAYER).length != 0){
         let gameId = Object.keys(WAITING_PLAYER)[0]
         setup(socket, gameId, 'join')
       } else {
-        // starting a new game since there are no waiting player
-        let id = Math.random().toString(36).substring(3, 10);
-        setup(socket, id, 'new')
+        let gameId = Math.random().toString(36).substring(3, 10);
+        setup(socket, gameId, 'new')
       }
     }
   })
   socket.on('new game', (data) => {
     setup(socket, data.gameId, 'new')
   })
-  // WAITING_PLAYER logic is to match with random player
   socket.on('join game', (data, callback) => {
     if (typeof GAME_IDS[data] != 'undefined' && GAME_IDS[data].length === 1){
       callback(true);
@@ -55,71 +50,53 @@ io.sockets.on('connection', socket => {
     }
   })
 
-    socket.on('typedForward', data => {
-      let player = PLAYER_LIST[socket.id];
-      if (data.inputId === 'forward'){
-        player.typingForward = data.state;
-        player.wpm = data.wpm;
-      } else if (data.inputId === 'backward') {
-        player.typingBackward = data.state;
-        player.wpm = parseInt(data.wpm);
+  socket.on('typedForward', data => {
+    let player = PLAYER_LIST[socket.id];
+    if (data.inputId === 'forward'){
+      player.typingForward = data.state;
+    } else if (data.inputId === 'backward') {
+      player.typingBackward = data.state;
+    }
+    player.wpm = parseInt(data.wpm);
+    pack = [];
+    let gameid = SOCKET_LIST[socket.id].gameId;
+    let ids = GAME_IDS[gameid];
+    for (let i in ids){
+      let player = PLAYER_LIST[ids[i]];
+      player.updatePosition(player.wpm);
+      pack.push({
+        id: player.id,
+        x: player.x,
+        typingForward: player.typingForward,
+        typingBackward: player.typingBackward
+      })
+    }
+    setTimeout( () => {
+      for (let i in ids){
+        let socket = SOCKET_LIST[ids[i]];
+        socket.emit('newPosition', pack);
       }
-      pack = [];
-      console.log("players", PLAYER_LIST);
-      let socketid = player.socketID;
-      console.log('=================');
-      console.log('socket id', socketid);
-      let gameid = SOCKET_LIST[socketid].gameId;
-      console.log('gameid', gameid);
-      for (let i in GAME_IDS[gameid]){
-        let ids = GAME_IDS[gameid]
-        let player = PLAYER_LIST[ids[i]];
-        player.updatePosition(player.wpm);
-        pack.push({
-          id: player.id,
-          x: player.x,
-          typingForward: player.typingForward,
-          typingBackward: player.typingBackward
-        })
-      }
-      setTimeout( () => {
-        for (let i in GAME_IDS[gameid]){
-          let ids = GAME_IDS[gameid]
-          let socket = SOCKET_LIST[ids[i]];
-          socket.emit('newPosition', pack);
-        }
-      }, 1000/25)
-
-      // console.log(pack);
-    })
-    socket.on('disconnect', (data) => {
-      if (!socket.gameId) return;
-      // GAME_IDS.splice(GAME_IDS.indexOf(socket.gameId), 1);
-
-
-      if (socket.singlePlayer){
-        // if it's single player game needs to delete the gameID
-        delete GAME_IDS[socket.gameId]
-      } else if (GAME_IDS[socket.gameId] > 1){
-        // else check for the game id
-        // more than 1 player
-        GAME_IDS[socket.gameId] = 1
-      } else {
-        delete GAME_IDS[socket.gameId];
-      }
-      updateGameRooms();
-      // socket.leave(gameID)
-      delete SOCKET_LIST[socket.id];
-      delete PLAYER_LIST[socket.id];
-
-    })
-
-
+    }, 1000/25)
+  })
+  socket.on('disconnect', () => {
+    if (!socket.gameId) return;
+    if (socket.singlePlayer){
+      let socketIds = GAME_IDS[socket.gameId];
+      delete SOCKET_LIST[socketIds[1]];
+      delete PLAYER_LIST[socketIds[1]];
+      delete GAME_IDS[socket.gameId];
+    } else if (GAME_IDS[socket.gameId].length > 1){
+      let idx = GAME_IDS[socket.gameId].indexOf(socket.id);
+      GAME_IDS[socket.gameId].splice(idx, 1);
+    } else {
+      delete GAME_IDS[socket.gameId];
+      delete WAITING_PLAYER[socket.gameId];
+    }
+    delete SOCKET_LIST[socket.id];
+    delete PLAYER_LIST[socket.id];
+  })
 })
 
-function updateGameRooms(){
-  io.sockets.emit('gamerooms', GAME_IDS);
-}
 function notify(...sockets){
   sockets.forEach(socket => {
     socket.emit('msg', 'Start Typing');

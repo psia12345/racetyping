@@ -15,8 +15,9 @@ class Timer{
     this.width-= decrementFactor;
     if (this.width <= 0){ this.width = 0}
     this.displayTimer();
-    this.game.wpm.calculateWPM(this, this.game.typing.typedWord)
-
+    // this.game.wpm.calculateWPM(this, this.game.typing.typedWord)
+    this.game.wpm.calculateWPM(this, this.game.typing.numCorrect)
+    this.game.wpm.displayWPM();
 
     if (this.timer === 0){
       this.game.gameOver(this.timer, this.game.typing.numWrong);

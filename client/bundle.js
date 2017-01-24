@@ -305,7 +305,8 @@
 	  splashPage.style.display = 'none';
 	  waiting.style.display = 'none';
 	  gameView.style.display = 'unset';
-	  timeLimit = parseInt(timeLimit) * 5;
+	  timeLimit = parseInt(timeLimit) * 5 || 10;
+	  console.log(timeLimit);
 	}
 	socket.on('msg', message);
 
@@ -399,9 +400,9 @@
 	  startCountingTime() {
 
 	    this.time.decrementSeconds(this);
-	    this.wpm.calculateWPM(this.time, this.typing.typedWord);
+	    // this.wpm.adjustedWPM(this.time, this.typing.typedWord, this.typing.numWrong);
 	    // console.log('game', this);
-	    this.wpm.display(this.time, this.typing.typedWord);
+	    // this.wpm.display(this.time, this.typing.typedWord);
 
 	    this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
 	  }
@@ -414,7 +415,7 @@
 	    inputDiv.blur();
 	    const modal = document.getElementById('modal');
 	    modal.style.display = 'block';
-	    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numWrong);
+	    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numCorrect, this.typing.numWrong);
 	  }
 	  // continueGame(){
 	  //   const ctx = document.getElementById('canvas').getContext('2d');
@@ -522,7 +523,9 @@
 	      this.width = 0;
 	    }
 	    this.displayTimer();
-	    this.game.wpm.calculateWPM(this, this.game.typing.typedWord);
+	    // this.game.wpm.calculateWPM(this, this.game.typing.typedWord)
+	    this.game.wpm.calculateWPM(this, this.game.typing.numCorrect);
+	    this.game.wpm.displayWPM();
 
 	    if (this.timer === 0) {
 	      this.game.gameOver(this.timer, this.game.typing.numWrong);
@@ -538,55 +541,41 @@
 	class WordCalculation {
 	  constructor() {
 	    this.currentWPM = 0;
+	    this.totalTime = 0;
 	  }
-	  calculateWPM(time, text) {
+	  calculateWPM(time, right) {
 	    // time object
-	    const span = document.createElement('span');
-	    const currentTimeLeft = time.timer;
-	    const totalTime = time.initialTime;
-	    this.currentWPM = Math.floor(text.length / 5 / (totalTime - currentTimeLeft) * 60);
-	    span.textContent = this.currentWPM + " wpm";
-	    span.className = 'wpm';
-	    return span;
+	    this.totalTime = time.initialTime;
+	    let currentTimeLeft = this.totalTime - time.timer;
+	    this.currentWPM = right / currentTimeLeft * 60;
 	  }
-	  adjustedWPM(time, text, wrong) {
+	  adjustedWPM(right, wrong) {
 	    // time object
-	    const span = document.createElement('span');
-	    const totalTime = time.initialTime;
-	    let wpm = text.length / 5;
-	    wpm = Math.floor((wpm - wrong) / totalTime * 60);
-	    if (wpm <= 0) wpm = 0;
-	    span.textContent = wpm + " wpm";
-	    span.className = 'wpm';
-	    return span;
+	    let adjusted = this.currentWPM - wrong / this.totalTime * 60;
+	    return adjusted <= 0 ? 0 : adjusted;
 	  }
-	  accuracy(wrong, correct) {
-	    // number of correct charcters typed / total number of charcters (should still have accuracy < 100 % if there are any corrected mistake)
-	    // const span = document.createElement('span');
-	    // const total = correct + wrong;
-	    // span.textContent = Math.floor((correct - wrong) / total * 100) + " %";
-	    // span.className = 'wpm';
-	    // return span;
+	  accuracy(right, wrong) {
+	    return Math.floor(right / (wrong + right) * 100);
 	  }
-	  charInMin(time, text) {
-	    const span = document.createElement('span');
-	    const timePassed = time.initialTime - time.timer;
-	    span.textContent = Math.floor(text.length / timePassed * 60) + " characters";
-	    span.className = 'wpm';
-	    return span;
-	  }
-	  display(time, text) {
+	  displayWPM() {
 	    const wpmDiv = document.getElementById('wpm');
 	    let span = document.getElementsByClassName('wpm')[1];
-	    if (typeof span !== 'undefined') wpmDiv.removeChild(span);
-	    wpmDiv.appendChild(this.calculateWPM(time, text));
+	    wpmDiv.removeChild(span);
+	    wpmDiv.appendChild(this.createSpan(this.currentWPM, 'wpm'));
 	  }
-	  displayResults(time, text, wrong, actualText) {
+	  displayResults(time, text, right, wrong, actualText) {
 	    const resultDivs = document.getElementsByClassName('result');
-	    resultDivs[0].appendChild(this.calculateWPM(time, text));
-	    resultDivs[1].appendChild(this.adjustedWPM(time, text, wrong));
-	    resultDivs[2].appendChild(this.charInMin(time, text));
-	    // resultDivs[2].appendChild(this.accuracy(typedtext, actualText));
+	    let adjusted = this.adjustedWPM(right, wrong);
+	    let accuracy = this.accuracy(right, wrong);
+	    resultDivs[0].appendChild(this.createSpan(this.currentWPM, 'WPM'));
+	    resultDivs[1].appendChild(this.createSpan(adjusted, 'WPM'));
+	    resultDivs[2].appendChild(this.createSpan(accuracy, '%'));
+	  }
+	  createSpan(num, unit) {
+	    const span = document.createElement('span');
+	    span.textContent = `${ num } ${ unit }`;
+	    span.className = 'wpm';
+	    return span;
 	  }
 	}
 	module.exports = WordCalculation;

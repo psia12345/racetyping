@@ -244,7 +244,6 @@ document.addEventListener('click', e => {
         gameId.value = ""
     } else if (e.target.textContent === 'Join Random Game'){
       socket.emit('join available game', {type: 'player'})
-
     }
   }
 })
@@ -260,7 +259,8 @@ function startGameSetup(){
   splashPage.style.display = 'none';
   waiting.style.display = 'none';
   gameView.style.display = 'unset';
-  timeLimit = parseInt(timeLimit) * 5 ;
+  timeLimit = parseInt(timeLimit) * 5 || 10;
+  console.log(timeLimit);
 }
 socket.on('msg', message);
 

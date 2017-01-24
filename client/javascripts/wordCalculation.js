@@ -1,53 +1,39 @@
 class WordCalculation {
   constructor(){
     this.currentWPM = 0;
+    this.totalTime = 0;
   }
-  calculateWPM(time, text) { // time object
-    const span = document.createElement('span');
-    const currentTimeLeft = time.timer;
-    const totalTime = time.initialTime;
-    this.currentWPM = Math.floor((text.length / 5) / (totalTime - currentTimeLeft) * 60);
-    span.textContent = this.currentWPM + " wpm";
-    span.className = 'wpm';
-    return span;
+  calculateWPM(time, right) { // time object
+    this.totalTime = time.initialTime;
+    let currentTimeLeft = this.totalTime - time.timer;
+    this.currentWPM = right / currentTimeLeft * 60;
   }
-  adjustedWPM(time, text, wrong){ // time object
-    const span = document.createElement('span');
-    const totalTime = time.initialTime;
-    let wpm = (text.length / 5) ;
-    wpm = Math.floor((wpm - wrong) / totalTime * 60 );
-    if ( wpm <= 0 ) wpm = 0
-    span.textContent = wpm + " wpm";
-    span.className = 'wpm';
-    return span;
+  adjustedWPM(right, wrong){ // time object
+    let adjusted = this.currentWPM - (wrong / this.totalTime * 60);
+    return adjusted <= 0 ? 0 : adjusted
   }
-  accuracy(wrong, correct){
-    // number of correct charcters typed / total number of charcters (should still have accuracy < 100 % if there are any corrected mistake)
-    // const span = document.createElement('span');
-    // const total = correct + wrong;
-    // span.textContent = Math.floor((correct - wrong) / total * 100) + " %";
-    // span.className = 'wpm';
-    // return span;
+  accuracy(right, wrong){
+    return Math.floor((right) / (wrong + right) * 100);
   }
-  charInMin(time, text){
-    const span = document.createElement('span');
-    const timePassed = time.initialTime - time.timer;
-    span.textContent = Math.floor( text.length / timePassed * 60) + " characters";
-    span.className = 'wpm';
-    return span;
-  }
-  display(time, text){
+  displayWPM(){
     const wpmDiv = document.getElementById('wpm');
     let span = document.getElementsByClassName('wpm')[1];
-    if (typeof span !== 'undefined' ) wpmDiv.removeChild(span);
-    wpmDiv.appendChild(this.calculateWPM(time, text));
+    wpmDiv.removeChild(span);
+    wpmDiv.appendChild(this.createSpan(this.currentWPM, 'wpm'));
   }
-  displayResults(time, text, wrong, actualText){
+  displayResults(time, text, right, wrong, actualText){
     const resultDivs = document.getElementsByClassName('result');
-    resultDivs[0].appendChild(this.calculateWPM(time, text));
-    resultDivs[1].appendChild(this.adjustedWPM(time, text, wrong));
-    resultDivs[2].appendChild(this.charInMin(time, text));
-    // resultDivs[2].appendChild(this.accuracy(typedtext, actualText));
+    let adjusted = this.adjustedWPM(right, wrong);
+    let accuracy = this.accuracy(right, wrong);
+    resultDivs[0].appendChild(this.createSpan(this.currentWPM, 'WPM'));
+    resultDivs[1].appendChild(this.createSpan(adjusted, 'WPM'));
+    resultDivs[2].appendChild(this.createSpan(accuracy, '%'));
+  }
+  createSpan(num, unit){
+    const span = document.createElement('span');
+    span.textContent = `${num} ${unit}`;
+    span.className = 'wpm';
+    return span;
   }
 }
 module.exports = WordCalculation;
