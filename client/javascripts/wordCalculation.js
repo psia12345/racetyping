@@ -6,7 +6,7 @@ class WordCalculation {
   calculateWPM(time, right) { // time object
     this.totalTime = time.initialTime;
     let currentTimeLeft = this.totalTime - time.timer;
-    this.currentWPM = right / currentTimeLeft * 60;
+    this.currentWPM = Math.floor(right / currentTimeLeft * 60);
   }
   adjustedWPM(right, wrong){ // time object
     let adjusted = this.currentWPM - (wrong / this.totalTime * 60);

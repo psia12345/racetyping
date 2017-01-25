@@ -11,11 +11,11 @@ class ComputerServer{
   }
   updateSpdLevel(){
     if (this.level === 'easy'){
-      this.spd = 1;
-    } else if (this.level === 'med'){
       this.spd = 2;
-    } else if (this.level === 'hard'){
+    } else if (this.level === 'med'){
       this.spd = 3;
+    } else if (this.level === 'hard'){
+      this.spd = 5;
     }
     return this.spd;
   }

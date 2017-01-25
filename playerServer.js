@@ -10,9 +10,9 @@ class PlayerServer{
   }
   updatePosition(){
     if(this.typingForward){
-      this.x += this.updateSpd(this.wpm) + 1;
+      this.x += this.updateSpd(this.wpm);
     } else if (this.typingBackward) {
-      this.x -= this.updateSpd(this.wpm) - 1;
+      this.x -= this.updateSpd(this.wpm);
     }
   }
   updateSpd(){
@@ -27,7 +27,7 @@ class PlayerServer{
       this.spd = 3;
     } else if (this.wpm <= 80){
       this.spd = 4;
-    } else if (this.wpm <= 100){
+    } else if (this.wpm <= 90){
       this.spd = 5;
     } else {
       this.spd = 6;

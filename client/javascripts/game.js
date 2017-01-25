@@ -13,7 +13,6 @@ class Game{
     this.typing;
   }
   initializeGame(numWords, ...players){
-    // console.log(player);
     const inputDiv = document.getElementById('user-typing');
     const racetrack = document.getElementById('racetrack');
     const redcar = document.getElementById('redcar');
@@ -21,13 +20,11 @@ class Game{
     const WIDTH = window.innerWidth;
 
     this.typing = new Typing(this, this.wpm);
-    // player.assignCar();
-    // this.players << player;
     this.players = players;
     this.players.forEach( player => player.assignCar() )
 
     inputDiv.contentEditable = true;
-    inputDiv.focus();
+    // inputDiv.focus();
     this.generateWords(numWords);
     this.typing.highlightCurrentWord(0, this.wordsArray);
 
@@ -38,13 +35,10 @@ class Game{
     ctx.drawImage(greencar, 10, 200, 110, 65);
   }
   startCountingTime(){
-
-    this.time.decrementSeconds(this);
-    // this.wpm.adjustedWPM(this.time, this.typing.typedWord, this.typing.numWrong);
-    // console.log('game', this);
-    // this.wpm.display(this.time, this.typing.typedWord);
-
+    const inputDiv = document.getElementById('user-typing');
+    inputDiv.focus();
     this.intervalId = setInterval(this.time.decrementSeconds.bind(this.time), 1000);
+
   }
   gameOver(time, numWrong){
     time = time || this.time.timer

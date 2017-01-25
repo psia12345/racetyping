@@ -16,9 +16,6 @@ class Typing{
     inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
   handleKeyEvent(e){
-    if (this.noInput){
-      this.game.startCountingTime();
-    }
     this.noInput = false;
     const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
     const inputDiv = document.getElementById('user-typing');

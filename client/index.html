@@ -15,7 +15,9 @@
           <h2>Race Typing</h2>
             <p>The goal of the game is to type as fast and as accurately as you can within the given time limit. </p>
           <h3>1 Player Instruction:</h3>
-            <p>In single player game, you will be racing against a computer player. You can pick the difficulties of computer player (Easy, Medium, Hard, Extra Hard).</p>
+            <p>In single player game, you will be racing against a computer player. You can pick the difficulties of computer player (Easy, Medium, or Hard).
+
+            Each difficulty is associated with different default wpm.</p>
             <div id="proceed-1p" class="button">Proceed to 1 Player Game</div>
         </div>
       </div>
@@ -24,7 +26,13 @@
           <h2>Race Typing</h2>
           <p>The goal of the game is to type as fast and as accurately as you can within the given time limit. </p>
           <h3>2 Players Instruction:</h3>
-          <p>You can create a new 2 player game. Once you created the game, you have to wait until there is another player to join you. Alternatively, you can also</p>
+          <p>You can create a new 2 player game. Once you created the game, you have to wait until there is another player to join you.
+
+          You can also join a random game, in which you will be matched with another player based on availability.
+
+          You can also ask another friend to match with you using the unique game room ID that will be generated after created a new 2 player game.
+
+          Each 2 player game will last 5 minutes. THe game will begin as soon as both players click 'Ready' button.</p>
           <div id="proceed-2p" class="button">Proceed to 2 Player Game</div>
         </div>
       </div>
@@ -33,11 +41,11 @@
           <div class='content'>
             <div class="level">
               <h3>Select Difficulties:</h3>
-              <input type='radio' value='easy' checked name='difficulty' id='easy-1'><label for='easy-1'>Easy<br/><p>Easy Mode: Computer player will type at 25 wpm.</p></label>
-              <input type='radio' value='med' name='difficulty' id='med-1'><label for='med-1'>Medium<br/><p>Medium Mode: Computer player will type at 50 wpm.</p></label>
+              <input type='radio' value='easy' checked name='difficulty' id='easy-1'><label for='easy-1'>Easy<br/><p>Easy Mode: Computer player will type at 40 wpm.</p></label>
+              <input type='radio' value='med' name='difficulty' id='med-1'><label for='med-1'>Medium<br/><p>Medium Mode: Computer player will type at 60 wpm.</p></label>
 
               <input type='radio' value='hard' name='difficulty' id='hard-1'><label for='hard-1'>Hard<br/>
-              <p>Hard Mode: Computer player will type at 80 wpm.</p></label>
+              <p>Hard Mode: Computer player will type at 90 wpm.</p></label>
             </div>
             <div class="time">
               <h3>Select Time:</h3>
@@ -77,33 +85,28 @@
 
         </div>
       </div>
-      <!-- <div id="option-buttons"> -->
-        <div class="pick-player">
-          <div class="single-game">1 Player</div>
-          <div class="two-game">2 Players</div>
-        </div>
-        <!-- <select id="mode">Select Time
-          <option value="1">Easy</option>
-          <option value="3">Medium</option>
-          <option value="5">Hard</option>
-          <option value="10">Extremely Hard</option>
-        </select> -->
-        <!-- <div>
-          <div class="gameid">
-            <input type="text" id="gameid" />
-            <button class="join-game">Join Game</button>
-          </div>
-        </div> -->
-        <!-- <select id="time">Select Time
-          <option value="1">1 minute</option>
-          <option value="3">3 minutes</option>
-          <option value="5">5 minutes</option>
-          <option value="10">10 minutes</option>
-        </select>
-      </div> -->
-
+      <div class="pick-player">
+        <div class="single-game">1 Player</div>
+        <div class="two-game">2 Players</div>
+      </div>
     </div>
     <div id="waiting">Waiting for a second player to join</div>
+
+    <div id='ready' class='modal'>
+      <div class='modal-content'>
+        <div class='default'>
+          <h3>Click 'Ready' button to start the game</h3>
+          <div id='ready-button' class='button'>Ready!</div>
+        </div>
+        <div class="waiting hidden">
+          <h3>Waiting for the other player to get ready</h3>
+        </div>
+        <div class="countdown hidden">
+          <h3>Begin Typing!</h3>
+        </div>
+      </div>
+    </div>
+
     <div id="the-game">
 
       <nav>
@@ -129,9 +132,7 @@
           <p>Results:</p>
           <div class="result">WPM: </div>
           <div class="result">Adjusted WPM: </div>
-          <div class="result">Number of Character Typed In a Minute: </div>
           <div class="result">Accuracy: </div>
-          <button>Play Again</button>
           <button>Return to Main Page</button>
         </div>
       </div>

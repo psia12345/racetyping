@@ -16,6 +16,7 @@ const GAME_IDS = {};
 const Player = require('./playerServer');
 const Computer = require('./computerPlayer');
 let pack;
+let ids;
 
 io.sockets.on('connection', socket => {
   socket.id = Math.random();
@@ -52,6 +53,7 @@ io.sockets.on('connection', socket => {
 
   socket.on('typedForward', data => {
     let player = PLAYER_LIST[socket.id];
+    debugger;
     if (data.inputId === 'forward'){
       player.typingForward = data.state;
     } else if (data.inputId === 'backward') {
@@ -60,24 +62,49 @@ io.sockets.on('connection', socket => {
     player.wpm = parseInt(data.wpm);
     pack = [];
     let gameid = SOCKET_LIST[socket.id].gameId;
-    let ids = GAME_IDS[gameid];
+    ids = GAME_IDS[gameid];
     for (let i in ids){
       let player = PLAYER_LIST[ids[i]];
       player.updatePosition(player.wpm);
-      pack.push({
-        id: player.id,
-        x: player.x,
-        typingForward: player.typingForward,
-        typingBackward: player.typingBackward
-      })
+      if (typeof player.typingBackward === 'undefined'){
+        pack.push({
+          id: player.id,
+          x: player.x
+        })
+      } else {
+        pack.push({
+          id: player.id,
+          x: player.x,
+          typingForward: player.typingForward,
+          typingBackward: player.typingBackward
+        })
+      }
     }
-    setTimeout( () => {
+    socket.on('get position', () => {
+      let ids = GAME_IDS[socket.gameId]
+      console.log('GAME IDS', ids);
       for (let i in ids){
         let socket = SOCKET_LIST[ids[i]];
         socket.emit('newPosition', pack);
+        console.log(pack);
       }
-    }, 1000/25)
+    })
   })
+  socket.on('ready', () => {
+    socket.ready = true
+    let socketIds = GAME_IDS[socket.gameId];
+    for (let i in socketIds){
+      let otherSocket = SOCKET_LIST[socketIds[i]];
+      console.log('othersocket id', otherSocket.id);
+      if (otherSocket.id != socket.id && otherSocket.ready ){
+        socket.emit('both players ready')
+        otherSocket.emit('both players ready')
+      } else if (socket.singleGame && otherSocket.id != socket.id){
+        socket.emit('both players ready')
+      }
+    }
+  })
+
   socket.on('disconnect', () => {
     if (!socket.gameId) return;
     if (socket.singlePlayer){
