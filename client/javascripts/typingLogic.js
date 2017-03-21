@@ -15,6 +15,9 @@ class Typing{
     const inputDiv = document.getElementById('user-typing');
     inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
+  isCorrectWord(word){
+      //logic to check the word that just typed
+  }
   handleKeyEvent(e){
     this.noInput = false;
     const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
