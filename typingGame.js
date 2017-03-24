@@ -53,7 +53,7 @@ io.sockets.on('connection', socket => {
 
   socket.on('typedForward', data => {
     let player = PLAYER_LIST[socket.id];
-    debugger;
+    console.log('typed forward');
     if (data.inputId === 'forward'){
       player.typingForward = data.state;
     } else if (data.inputId === 'backward') {
@@ -90,6 +90,10 @@ io.sockets.on('connection', socket => {
       }
     })
   })
+  // initially before typing, pack should only have initial positions
+  // socket.on('get position', () =>{
+  //
+  // })
   socket.on('ready', () => {
     socket.ready = true
     let socketIds = GAME_IDS[socket.gameId];
@@ -123,7 +127,6 @@ io.sockets.on('connection', socket => {
     delete PLAYER_LIST[socket.id];
   })
 })
-
 function notify(...sockets){
   sockets.forEach(socket => {
     socket.emit('msg', 'Start Typing');

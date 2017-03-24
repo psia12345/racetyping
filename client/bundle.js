@@ -167,7 +167,7 @@
 	    player1 = new Player(1, 10, 50, redcar, ctx);
 	    player2 = new Player(2, 10, 200, greencar, ctx);
 	    game = new Game(timeLimit, ctx);
-	    game.initializeGame(20, player1, player2);
+	    game.initializeGame(2000, player1, player2);
 	  } else {
 	    splashPage.style.display = 'none';
 	    gameView.style.display = 'none';
@@ -203,6 +203,8 @@
 	    player1.car.drawCar(pack[i].x);
 	    player2.car.drawCar(pack[i + 1].x);
 	  }
+	  triggerGetPosition();
+	  console.log('interval', interval);
 	  if (game.time.timer === 0) {
 	    clearInterval(interval);
 	  }
@@ -227,6 +229,7 @@
 	  triggerGetPosition();
 	}
 	function triggerGetPosition() {
+	  console.log('in the trigger get position fucntion');
 	  interval = setInterval(() => socket.emit('get position'), 1000);
 	}
 
