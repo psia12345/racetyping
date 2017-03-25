@@ -87,12 +87,12 @@
 	    modal1.style.display = 'none';
 	    modal2.style.display = 'none';
 	  } else if (e.target == onePlayer) {
-	    console.log('continue single player game');
+	    // console.log('continue single player game');
 	    modal1.style.display = 'none';
 	    const nextPage = document.getElementById('one-p-page2');
 	    nextPage.style.display = 'block';
 	  } else if (e.target == twoPlayers) {
-	    console.log('start two player game');
+	    // console.log('start two player game');
 	    modal2.style.display = 'none';
 	    const nextPage = document.getElementById('two-p-page2');
 	    nextPage.style.display = 'block';
@@ -113,27 +113,27 @@
 	  } else if (e.target == singleGame) {
 	    let level = document.querySelector('input[name="difficulty"]:checked').value;
 	    timeLimit = document.querySelector('input[name="time"]:checked').value;
-	    console.log('start single player game');
+	    // console.log('start single player game');
 	    let id = Math.random().toString(36).substring(3, 10);
 	    socket.emit('single player game', { gameId: id });
 	    socket2.emit('join available game', { gameId: id, type: 'computer', level: level });
 	  } else if (e.target.className === 'option-buttons') {
 	    if (e.target.textContent === 'Create New Game Room') {
-	      console.log('create new game');
+	      // console.log('create new game');
 	      let id = Math.random().toString(36).substring(3, 10);
-	      console.log(id);
+	      // console.log(id);
 	      socket.emit('new game', { gameId: id });
 	    } else if (e.target.textContent === 'Join Game') {
 	      let gameId = e.target.previousElementSibling;
 	      socket.emit('join game', gameId.value, data => {
 	        if (data) {
-	          console.log("in the game");
+	          // console.log("in the game")
 	          // successfully joined game
 	          // start the game
 	        } else {
 	          let msg = 'The game room ID that you entered either doesn\'t exist yet or the room is already full. Please Try again.';
 	          // no game room exits, try again or initiate a new game room
-	          console.log(msg);
+	          // console.log(msg);
 	        }
 	      });
 	      gameId.value = "";
@@ -155,7 +155,7 @@
 	  waiting.style.display = 'none';
 	  gameView.style.display = 'unset';
 	  timeLimit = parseInt(timeLimit) * 60 || 5 * 60;
-	  console.log(timeLimit);
+	  // console.log(timeLimit);
 	  document.getElementById('ready').style.display = 'block';
 	}
 	socket.on('msg', message);
@@ -190,7 +190,7 @@
 	  });
 	};
 	socket.on('newPosition', pack => {
-	  console.log(pack);
+	  // console.log(pack);
 
 	  if (typeof player1 === 'undefined' || typeof player2 === 'undefined') {
 	    return;
@@ -203,8 +203,8 @@
 	    player1.car.drawCar(pack[i].x);
 	    player2.car.drawCar(pack[i + 1].x);
 	  }
-	  triggerGetPosition();
-	  console.log('interval', interval);
+	  // triggerGetPosition();
+	  // console.log('interval', interval);
 	  if (game.time.timer === 0) {
 	    clearInterval(interval);
 	  }
@@ -229,8 +229,13 @@
 	  triggerGetPosition();
 	}
 	function triggerGetPosition() {
-	  console.log('in the trigger get position fucntion');
-	  interval = setInterval(() => socket.emit('get position'), 1000);
+	  // console.log('trigger called');
+	  interval = setInterval(() => getpostion(), 1000);
+	  // console.log(interval);
+	}
+	function getpostion() {
+	  // console.log('get position');
+	  socket.emit('get position');
 	}
 
 /***/ },
@@ -472,6 +477,9 @@
 	    const inputDiv = document.getElementById('user-typing');
 	    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
 	  }
+	  isCorrectWord(word) {
+	    //logic to check the word that just typed
+	  }
 	  handleKeyEvent(e) {
 	    this.noInput = false;
 	    const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
@@ -522,7 +530,7 @@
 	      } else {
 	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
 	      }
-	      console.log("backspace", inputDiv.innerHTML);
+	      // console.log("backspace", inputDiv.innerHTML)
 	      this.highlightCurrentWord(this.cursorPos);
 	      // missing some sort of input.innerHTML slice method to account for bug
 	    } else if (alphabet.includes(e.key.toLowerCase())) {
@@ -610,13 +618,13 @@
 	      wpm = 0;
 	    }
 	    if (this.typingForward) {
-	      console.log('**************');
+	      // console.log('**************');
 	      this.x += this.updateSpd(wpm) + 1;
 	    } else if (this.typingBackward) {
 	      this.x -= this.updateSpd(wpm) - 1;
 	    }
-	    console.log(this.id);
-	    console.log('x', this.x);
+	    // console.log(this.id)
+	    // console.log('x', this.x);
 	    return this.x;
 	  }
 	  updateSpd(wpm) {
@@ -636,7 +644,7 @@
 	    } else {
 	      this.spd = 6;
 	    }
-	    console.log('spd', this.spd);
+	    // console.log('spd', this.spd);
 	    return this.spd;
 	  }
 	  assignCar() {

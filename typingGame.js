@@ -20,7 +20,7 @@ let ids;
 
 io.sockets.on('connection', socket => {
   socket.id = Math.random();
-  console.log('server started');
+  // console.log('server started');
   SOCKET_LIST[socket.id] = socket;
   socket.on('single player game', data => {
     socket.singleGame = true;
@@ -53,7 +53,7 @@ io.sockets.on('connection', socket => {
 
   socket.on('typedForward', data => {
     let player = PLAYER_LIST[socket.id];
-    console.log('typed forward');
+    // console.log('typed forward');
     if (data.inputId === 'forward'){
       player.typingForward = data.state;
     } else if (data.inputId === 'backward') {
@@ -82,11 +82,11 @@ io.sockets.on('connection', socket => {
     }
     socket.on('get position', () => {
       let ids = GAME_IDS[socket.gameId]
-      console.log('GAME IDS', ids);
+      // console.log('GAME IDS', ids);
       for (let i in ids){
         let socket = SOCKET_LIST[ids[i]];
-        socket.emit('newPosition', pack);
-        console.log(pack);
+        // socket.emit('newPosition', pack);
+        // console.log(pack);
       }
     })
   })
@@ -99,7 +99,7 @@ io.sockets.on('connection', socket => {
     let socketIds = GAME_IDS[socket.gameId];
     for (let i in socketIds){
       let otherSocket = SOCKET_LIST[socketIds[i]];
-      console.log('othersocket id', otherSocket.id);
+      // console.log('othersocket id', otherSocket.id);
       if (otherSocket.id != socket.id && otherSocket.ready ){
         socket.emit('both players ready')
         otherSocket.emit('both players ready')

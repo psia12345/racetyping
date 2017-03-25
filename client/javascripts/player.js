@@ -16,13 +16,13 @@ class Player {
       wpm = 0
     }
     if(this.typingForward){
-      console.log('**************');
+      // console.log('**************');
       this.x += this.updateSpd(wpm) + 1;
     } else if (this.typingBackward) {
       this.x -= this.updateSpd(wpm) - 1;
     }
-    console.log(this.id)
-    console.log('x', this.x);
+    // console.log(this.id)
+    // console.log('x', this.x);
     return this.x;
   }
   updateSpd(wpm){
@@ -42,7 +42,7 @@ class Player {
     } else {
       this.spd = 6;
     }
-    console.log('spd', this.spd);
+    // console.log('spd', this.spd);
     return this.spd;
   }
   assignCar(){

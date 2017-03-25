@@ -16,7 +16,7 @@ class PlayerServer{
     }
   }
   updateSpd(){
-    console.log('updateSpd in player server');
+    // console.log('updateSpd in player server');
     if (this.wpm === 0){
       this.spd = 0;
     } else if (this.wpm <= 20){

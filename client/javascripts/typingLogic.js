@@ -64,7 +64,7 @@ class Typing{
         } else {
           this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
         }
-      console.log("backspace", inputDiv.innerHTML)
+      // console.log("backspace", inputDiv.innerHTML)
       this.highlightCurrentWord(this.cursorPos);
   // missing some sort of input.innerHTML slice method to account for bug
     } else if (alphabet.includes(e.key.toLowerCase())){
