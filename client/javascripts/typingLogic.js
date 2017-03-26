@@ -1,5 +1,6 @@
 const moveCursor = require('./moveCursor');
 const inputDiv = document.getElementById('user-typing');
+const textDiv = document.getElementById('text');
 
 class Typing{
   constructor(game, wpm, wordsArray){
@@ -13,21 +14,25 @@ class Typing{
     // this.wpm = wpm;
     // this.animationId = null;
     // this.noInput = true;
-    this.childNodes = [];
+    // this.childNodes = [];
     this.lastWord = "";
 
     inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
   isCorrectWord(){
       //logic to check the word that just typed
-      console.log('last', this.lastWord);
-      console.log('current', this.currentWord);
+      return this.lastWord === this.getWord(this.cursorPos)
+      debugger;
   }
   displayWords(){
-    this.isCorrectWord();
     this.removeWord();
     let span = document.createElement('span');
     span.textContent = `${this.lastWord} `;
+    if (this.isCorrectWord()){
+      span.className = 'gray';
+    } else {
+      span.className = 'red';
+    }
     inputDiv.appendChild(span);
   }
   removeWord(){
@@ -79,22 +84,22 @@ class Typing{
       e.preventDefault();
     }
   }
-  highlightCurrentWord(position){
-    const textDiv = document.getElementById('text');
-    let remainingString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
-
-    const currentWordSpan = document.createElement('span');
-
+  getWord(position){
     if (typeof this.wordsArray[position] !== 'undefined') {
       // as long as there's a word at that position
       this.currentWord = this.wordsArray[position];
-      console.log(this.currentWord);
-      currentWordSpan.textContent = `${this.currentWord} `
     } else {
-      currentWordSpan.textContent = "";
+      this.currentWord = "";
     }
-    const highlightedElement = document.getElementsByClassName("highlight")[0];
+    return this.currentWord;
+  }
+  highlightCurrentWord(position){
+    this.getWord(position);
+    const currentWordSpan = document.createElement('span');
+    // console.log(this.currentWord);
+    currentWordSpan.textContent = `${this.currentWord} `
 
+    const highlightedElement = document.getElementsByClassName("highlight")[0];
     if (highlightedElement){
       highlightedElement.nextSibling.textContent = "";
       textDiv.removeChild(highlightedElement);
@@ -103,6 +108,8 @@ class Typing{
     }
     currentWordSpan.className = 'highlight';
     textDiv.appendChild(currentWordSpan);
+
+    let remainingString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
     textDiv.appendChild(document.createTextNode(remainingString));
   }
 

@@ -63,3 +63,9 @@
 #the-game{
   display: none;
 }
+.gray {
+  color: gray;
+}
+.red {
+  color: red;
+}
