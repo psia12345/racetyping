@@ -19,13 +19,13 @@ class Game{
     const greencar = document.getElementById('greencar');
     const WIDTH = window.innerWidth;
 
-    this.typing = new Typing(this, this.wpm);
+    this.generateWords(numWords);
     this.players = players;
     this.players.forEach( player => player.assignCar() )
 
     inputDiv.contentEditable = true;
     // inputDiv.focus();
-    this.generateWords(numWords);
+    this.typing = new Typing(this, this.wpm, this.wordsArray);
     this.typing.highlightCurrentWord(0, this.wordsArray);
 
 

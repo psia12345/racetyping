@@ -85,7 +85,7 @@ io.sockets.on('connection', socket => {
       // console.log('GAME IDS', ids);
       for (let i in ids){
         let socket = SOCKET_LIST[ids[i]];
-        // socket.emit('newPosition', pack);
+        socket.emit('newPosition', pack);
         // console.log(pack);
       }
     })

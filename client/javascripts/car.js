@@ -5,8 +5,8 @@ class Car{
     this.img = img;
     this.spd = 0;
     this.ctx = ctx;
-    this.imgWidth = 110;
-    this.imgHeight = 65;
+    this.imgWidth = 100;
+    this.imgHeight = 60;
   }
   moveCarForward(wpm){
     this.updateSpd(wpm);
@@ -27,24 +27,6 @@ class Car{
   }
   drawCar(x){
     this.ctx.drawImage(this.img, x, this.y, this.imgWidth, this.imgHeight);
-  }
-  updateSpd(wpm){
-    //can use switch-case statement here
-    if (wpm === 0){
-      this.spd = 0;
-    } else if (wpm <= 20){
-      this.spd = 0.2;
-    } else if (wpm <= 40){
-      this.spd = 0.4;
-    } else if (wpm <= 60){
-      this.spd = 0.6;
-    } else if (wpm <= 80){
-      this.spd = 0.8;
-    } else if (wpm <= 100){
-      this.spd = 1;
-    } else {
-      this.spd = 1.2;
-    }
   }
 }
 module.exports = Car;

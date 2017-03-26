@@ -1,97 +1,97 @@
 const moveCursor = require('./moveCursor');
+const inputDiv = document.getElementById('user-typing');
 
 class Typing{
-  constructor(game, wpm){
-    this.typedWord = "";
+  constructor(game, wpm, wordsArray){
+    // this.typedWord = "";
     this.cursorPos = 0;
-    this.wordsArray = [];
+    this.wordsArray = wordsArray;
     this.numCorrect = 0;
     this.numWrong = 0;
     this.game = game;
-    this.wpm = wpm;
-    this.animationId = null;
-    this.noInput = true;
+    this.currentWord = "";
+    // this.wpm = wpm;
+    // this.animationId = null;
+    // this.noInput = true;
+    this.childNodes = [];
+    this.lastWord = "";
 
-    const inputDiv = document.getElementById('user-typing');
     inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
-  isCorrectWord(word){
+  isCorrectWord(){
       //logic to check the word that just typed
+      console.log('last', this.lastWord);
+      console.log('current', this.currentWord);
+  }
+  displayWords(){
+    this.isCorrectWord();
+    this.removeWord();
+    let span = document.createElement('span');
+    span.textContent = `${this.lastWord} `;
+    inputDiv.appendChild(span);
+  }
+  removeWord(){
+    if (inputDiv.childElementCount < 1){
+      // inputDiv.firstChild.data = "";
+      inputDiv.textContent = "";
+    } else {
+      inputDiv.lastChild.innerText = inputDiv.lastChild.innerText.slice(0, inputDiv.lastChild.innerText.length - this.lastWord.length)
+    }
   }
   handleKeyEvent(e){
     this.noInput = false;
     const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
-    const inputDiv = document.getElementById('user-typing');
-    let lastWord = this.typedWord.split(" ")[this.cursorPos];
+    // let lastWord = this.typedWord.split(" ")[this.cursorPos];
     let sentenceLength = inputDiv.innerHTML.length;
-    // this.wordsArray = this.game.wordsArray;
-    // console.log("before space", input.innerHTML)
+
+    let span = document.createElement('span');
     if (e.keyCode === 32) { // space
       this.highlightCurrentWord(this.cursorPos + 1);
-      inputDiv.innerHTML = inputDiv.innerHTML.slice(0, sentenceLength - lastWord.length)
-      this.typedWord += " "; // add space
-      // console.log("before replacing", input.innerHTML)
-      let elToRemove = inputDiv.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g)
-      if (elToRemove){ elToRemove = elToRemove[0] }
-      inputDiv.innerHTML = inputDiv.innerHTML.replace(elToRemove, "");
-      // console.log(input.innerHTML)
-      if (this.wordsArray[this.cursorPos] === lastWord){
-        this.numCorrect++;
-        inputDiv.innerHTML += `<font color="gray">${lastWord}</font>`;
-      } else {
-        this.numWrong++;
-        inputDiv.innerHTML += `<font color="red">${lastWord}</font>`;
-        // console.log("after adding incorrect", input.innerHTML)
-      }
-      moveCursor(inputDiv);
+      this.displayWords();
+      this.lastWord = ""; // reset lastWord Typed
+
+      moveCursor(inputDiv); // move the pointer
       this.cursorPos++;
       document.execCommand('forecolor', false, '000000');
     } else if (e.keyCode === 8){ // backspace
-      let lastChar = this.typedWord[this.typedWord.length - 1];
-      let typedSentence = this.typedWord.split(' '); //input.textContent.trim().split(" ");
-      let wordCount = typedSentence.length;
-        if (lastChar === " " && typedSentence[wordCount - 2] === this.wordsArray[this.cursorPos - 1]){
-          this.numCorrect--;
-          this.cursorPos--;
-          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-        } else if (lastChar === " " && typedSentence[wordCount - 2] !== this.wordsArray[this.cursorPos - 1]) {
-          this.numWrong--;
-          this.cursorPos--;
-          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-        } else if (lastChar === " "){
-          this.cursorPos--;
-          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-        } else {
-          this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-        }
-      // console.log("backspace", inputDiv.innerHTML)
-      this.highlightCurrentWord(this.cursorPos);
-  // missing some sort of input.innerHTML slice method to account for bug
+      // 2 scenario to delete
+      //1. in the middle of a word
+      //2. finished wrting the word, and going backward to modify it
+      // 3. if there are no more typed input, exit
+
+      if (inputDiv.textContent === "") return;
+
+      if (this.lastWord.length > 0){ // backspace w/in same word
+        this.lastWord = this.lastWord.slice(0, this.lastWord.length - 1); // modify the lastword tracker
+      } else {
+        let lastInput = inputDiv.lastChild.textContent;
+        this.lastWord = lastInput.split(' ').pop();
+        this.lastWord = this.lastWord.slice(0, this.lastWord.length - 1);
+
+        // move the cursor position back
+        this.cursorPos--;
+        this.highlightCurrentWord(this.cursorPos);
+      }
     } else if (alphabet.includes(e.key.toLowerCase())){
       this.typedWord += e.key;
+      this.lastWord += e.key;
     } else {
       e.preventDefault();
     }
-
-    // this.wpm.display(this.time, this.typedWord);
-    // let x = this
-    // requestAnimationFrame(function(x){
-    //   console.log(x);
-    //   x.moveCars(0, 1200/300, 0, 1);
-    // })
-    // this.game.gameOver(this.time.timer, this.numWrong);
-
   }
-  highlightCurrentWord(position, wordsArray){
+  highlightCurrentWord(position){
     const textDiv = document.getElementById('text');
-    this.wordsArray = wordsArray || this.wordsArray;
-    let laterString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
-    const currentWord = document.createElement('span');
+    let remainingString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
+
+    const currentWordSpan = document.createElement('span');
 
     if (typeof this.wordsArray[position] !== 'undefined') {
-      currentWord.textContent = this.wordsArray[position] + " ";
+      // as long as there's a word at that position
+      this.currentWord = this.wordsArray[position];
+      console.log(this.currentWord);
+      currentWordSpan.textContent = `${this.currentWord} `
     } else {
-      currentWord.textContent = "";
+      currentWordSpan.textContent = "";
     }
     const highlightedElement = document.getElementsByClassName("highlight")[0];
 
@@ -101,9 +101,10 @@ class Typing{
     } else {
       textDiv.textContent = "";
     }
-    currentWord.className = 'highlight';
-    textDiv.appendChild(currentWord);
-    textDiv.appendChild(document.createTextNode(laterString));
+    currentWordSpan.className = 'highlight';
+    textDiv.appendChild(currentWordSpan);
+    textDiv.appendChild(document.createTextNode(remainingString));
   }
+
 }
 module.exports = Typing;

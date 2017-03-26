@@ -190,8 +190,6 @@
 	  });
 	};
 	socket.on('newPosition', pack => {
-	  // console.log(pack);
-
 	  if (typeof player1 === 'undefined' || typeof player2 === 'undefined') {
 	    return;
 	  } else if (player1.car === null || player2.car === null) {
@@ -203,8 +201,6 @@
 	    player1.car.drawCar(pack[i].x);
 	    player2.car.drawCar(pack[i + 1].x);
 	  }
-	  // triggerGetPosition();
-	  // console.log('interval', interval);
 	  if (game.time.timer === 0) {
 	    clearInterval(interval);
 	  }
@@ -263,13 +259,13 @@
 	    const greencar = document.getElementById('greencar');
 	    const WIDTH = window.innerWidth;
 
-	    this.typing = new Typing(this, this.wpm);
+	    this.generateWords(numWords);
 	    this.players = players;
 	    this.players.forEach(player => player.assignCar());
 
 	    inputDiv.contentEditable = true;
 	    // inputDiv.focus();
-	    this.generateWords(numWords);
+	    this.typing = new Typing(this, this.wpm, this.wordsArray);
 	    this.typing.highlightCurrentWord(0, this.wordsArray);
 
 	    const ctx = document.getElementById('canvas').getContext('2d');
@@ -380,26 +376,26 @@
 /* 3 */
 /***/ function(module, exports) {
 
+	const bar = document.getElementById('bar');
 	class Timer {
 	  constructor(maxTime, game) {
-	    this.timer = maxTime;
-	    this.initialTime = maxTime;
-	    this.width = 100;
+	    this.maxTime = maxTime;
+	    this.timeLeft = maxTime;
+	    this.width = 100; //timer starts at 100%
 	    this.game = game;
 	  }
 	  displayTimer() {
-	    const bar = document.getElementById('bar');
 	    bar.style.width = this.width + '%';
 	  }
 	  decrementSeconds() {
-	    const decrementFactor = 100 / this.initialTime;
-	    this.timer--;
+	    const decrementFactor = 100 / this.maxTime;
+	    this.timeLeft--;
 	    this.width -= decrementFactor;
+
 	    if (this.width <= 0) {
 	      this.width = 0;
 	    }
 	    this.displayTimer();
-	    // this.game.wpm.calculateWPM(this, this.game.typing.typedWord)
 	    this.game.wpm.calculateWPM(this, this.game.typing.numCorrect);
 	    this.game.wpm.displayWPM();
 
@@ -461,102 +457,102 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const moveCursor = __webpack_require__(6);
+	const inputDiv = document.getElementById('user-typing');
 
 	class Typing {
-	  constructor(game, wpm) {
-	    this.typedWord = "";
+	  constructor(game, wpm, wordsArray) {
+	    // this.typedWord = "";
 	    this.cursorPos = 0;
-	    this.wordsArray = [];
+	    this.wordsArray = wordsArray;
 	    this.numCorrect = 0;
 	    this.numWrong = 0;
 	    this.game = game;
-	    this.wpm = wpm;
-	    this.animationId = null;
-	    this.noInput = true;
+	    this.currentWord = "";
+	    // this.wpm = wpm;
+	    // this.animationId = null;
+	    // this.noInput = true;
+	    this.childNodes = [];
+	    this.lastWord = "";
 
-	    const inputDiv = document.getElementById('user-typing');
 	    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
 	  }
-	  isCorrectWord(word) {
+	  isCorrectWord() {
 	    //logic to check the word that just typed
+	    console.log('last', this.lastWord);
+	    console.log('current', this.currentWord);
+	  }
+	  displayWords() {
+	    this.isCorrectWord();
+	    this.removeWord();
+	    let span = document.createElement('span');
+	    span.textContent = `${ this.lastWord } `;
+	    inputDiv.appendChild(span);
+	  }
+	  removeWord() {
+	    if (inputDiv.childElementCount < 1) {
+	      // inputDiv.firstChild.data = "";
+	      inputDiv.textContent = "";
+	    } else {
+	      inputDiv.lastChild.innerText = inputDiv.lastChild.innerText.slice(0, inputDiv.lastChild.innerText.length - this.lastWord.length);
+	    }
 	  }
 	  handleKeyEvent(e) {
 	    this.noInput = false;
 	    const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
-	    const inputDiv = document.getElementById('user-typing');
-	    let lastWord = this.typedWord.split(" ")[this.cursorPos];
+	    // let lastWord = this.typedWord.split(" ")[this.cursorPos];
 	    let sentenceLength = inputDiv.innerHTML.length;
-	    // this.wordsArray = this.game.wordsArray;
-	    // console.log("before space", input.innerHTML)
+
+	    let span = document.createElement('span');
 	    if (e.keyCode === 32) {
 	      // space
 	      this.highlightCurrentWord(this.cursorPos + 1);
-	      inputDiv.innerHTML = inputDiv.innerHTML.slice(0, sentenceLength - lastWord.length);
-	      this.typedWord += " "; // add space
-	      // console.log("before replacing", input.innerHTML)
-	      let elToRemove = inputDiv.innerHTML.match(/\<font color="#808080"\>\w+\<\/font\>/g);
-	      if (elToRemove) {
-	        elToRemove = elToRemove[0];
-	      }
-	      inputDiv.innerHTML = inputDiv.innerHTML.replace(elToRemove, "");
-	      // console.log(input.innerHTML)
-	      if (this.wordsArray[this.cursorPos] === lastWord) {
-	        this.numCorrect++;
-	        inputDiv.innerHTML += `<font color="gray">${ lastWord }</font>`;
-	      } else {
-	        this.numWrong++;
-	        inputDiv.innerHTML += `<font color="red">${ lastWord }</font>`;
-	        // console.log("after adding incorrect", input.innerHTML)
-	      }
-	      moveCursor(inputDiv);
+	      this.displayWords();
+	      this.lastWord = ""; // reset lastWord Typed
+
+	      moveCursor(inputDiv); // move the pointer
 	      this.cursorPos++;
 	      document.execCommand('forecolor', false, '000000');
 	    } else if (e.keyCode === 8) {
 	      // backspace
-	      let lastChar = this.typedWord[this.typedWord.length - 1];
-	      let typedSentence = this.typedWord.split(' '); //input.textContent.trim().split(" ");
-	      let wordCount = typedSentence.length;
-	      if (lastChar === " " && typedSentence[wordCount - 2] === this.wordsArray[this.cursorPos - 1]) {
-	        this.numCorrect--;
-	        this.cursorPos--;
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-	      } else if (lastChar === " " && typedSentence[wordCount - 2] !== this.wordsArray[this.cursorPos - 1]) {
-	        this.numWrong--;
-	        this.cursorPos--;
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
-	      } else if (lastChar === " ") {
-	        this.cursorPos--;
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	      // 2 scenario to delete
+	      //1. in the middle of a word
+	      //2. finished wrting the word, and going backward to modify it
+	      // 3. if there are no more typed input, exit
+
+	      if (inputDiv.textContent === "") return;
+
+	      if (this.lastWord.length > 0) {
+	        // backspace w/in same word
+	        this.lastWord = this.lastWord.slice(0, this.lastWord.length - 1); // modify the lastword tracker
 	      } else {
-	        this.typedWord = this.typedWord.slice(0, this.typedWord.length - 1);
+	        let lastInput = inputDiv.lastChild.textContent;
+	        this.lastWord = lastInput.split(' ').pop();
+	        this.lastWord = this.lastWord.slice(0, this.lastWord.length - 1);
+
+	        // move the cursor position back
+	        this.cursorPos--;
+	        this.highlightCurrentWord(this.cursorPos);
 	      }
-	      // console.log("backspace", inputDiv.innerHTML)
-	      this.highlightCurrentWord(this.cursorPos);
-	      // missing some sort of input.innerHTML slice method to account for bug
 	    } else if (alphabet.includes(e.key.toLowerCase())) {
 	      this.typedWord += e.key;
+	      this.lastWord += e.key;
 	    } else {
 	      e.preventDefault();
 	    }
-
-	    // this.wpm.display(this.time, this.typedWord);
-	    // let x = this
-	    // requestAnimationFrame(function(x){
-	    //   console.log(x);
-	    //   x.moveCars(0, 1200/300, 0, 1);
-	    // })
-	    // this.game.gameOver(this.time.timer, this.numWrong);
 	  }
-	  highlightCurrentWord(position, wordsArray) {
+	  highlightCurrentWord(position) {
 	    const textDiv = document.getElementById('text');
-	    this.wordsArray = wordsArray || this.wordsArray;
-	    let laterString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
-	    const currentWord = document.createElement('span');
+	    let remainingString = this.wordsArray.slice(position + 1, this.wordsArray.length).join(" ");
+
+	    const currentWordSpan = document.createElement('span');
 
 	    if (typeof this.wordsArray[position] !== 'undefined') {
-	      currentWord.textContent = this.wordsArray[position] + " ";
+	      // as long as there's a word at that position
+	      this.currentWord = this.wordsArray[position];
+	      console.log(this.currentWord);
+	      currentWordSpan.textContent = `${ this.currentWord } `;
 	    } else {
-	      currentWord.textContent = "";
+	      currentWordSpan.textContent = "";
 	    }
 	    const highlightedElement = document.getElementsByClassName("highlight")[0];
 
@@ -566,10 +562,11 @@
 	    } else {
 	      textDiv.textContent = "";
 	    }
-	    currentWord.className = 'highlight';
-	    textDiv.appendChild(currentWord);
-	    textDiv.appendChild(document.createTextNode(laterString));
+	    currentWordSpan.className = 'highlight';
+	    textDiv.appendChild(currentWordSpan);
+	    textDiv.appendChild(document.createTextNode(remainingString));
 	  }
+
 	}
 	module.exports = Typing;
 
@@ -605,56 +602,16 @@
 	class Player {
 	  constructor(id, socketId, maxTime) {
 	    this.id = id;
-	    this.socketId = socketId;
-	    this.typingForward = false;
-	    this.typingBackward = false;
 	    this.car = null;
-	    this.x = 10;
-	    this.wpm = 0;
-	    this.spd = 0;
-	  }
-	  updatePosition(wpm, forward, backward) {
-	    if (isNaN(wpm)) {
-	      wpm = 0;
-	    }
-	    if (this.typingForward) {
-	      // console.log('**************');
-	      this.x += this.updateSpd(wpm) + 1;
-	    } else if (this.typingBackward) {
-	      this.x -= this.updateSpd(wpm) - 1;
-	    }
-	    // console.log(this.id)
-	    // console.log('x', this.x);
-	    return this.x;
-	  }
-	  updateSpd(wpm) {
-	    //can use switch-case statement here
-	    if (wpm === 0) {
-	      this.spd = 0;
-	    } else if (wpm <= 20) {
-	      this.spd = 1;
-	    } else if (wpm <= 40) {
-	      this.spd = 2;
-	    } else if (wpm <= 60) {
-	      this.spd = 3;
-	    } else if (wpm <= 80) {
-	      this.spd = 4;
-	    } else if (wpm <= 100) {
-	      this.spd = 5;
-	    } else {
-	      this.spd = 6;
-	    }
-	    // console.log('spd', this.spd);
-	    return this.spd;
 	  }
 	  assignCar() {
 	    const redcar = document.getElementById('redcar');
 	    const greencar = document.getElementById('greencar');
 	    const ctx = document.getElementById('canvas').getContext('2d');
 	    if (this.id === 1) {
-	      this.car = new Car(this.x, 50, redcar, ctx);
+	      this.car = new Car(10, 50, redcar, ctx);
 	    } else {
-	      this.car = new Car(this.x, 200, greencar, ctx);
+	      this.car = new Car(10, 200, greencar, ctx);
 	    }
 	  }
 	}
@@ -671,8 +628,8 @@
 	    this.img = img;
 	    this.spd = 0;
 	    this.ctx = ctx;
-	    this.imgWidth = 110;
-	    this.imgHeight = 65;
+	    this.imgWidth = 100;
+	    this.imgHeight = 60;
 	  }
 	  moveCarForward(wpm) {
 	    this.updateSpd(wpm);
@@ -693,24 +650,6 @@
 	  }
 	  drawCar(x) {
 	    this.ctx.drawImage(this.img, x, this.y, this.imgWidth, this.imgHeight);
-	  }
-	  updateSpd(wpm) {
-	    //can use switch-case statement here
-	    if (wpm === 0) {
-	      this.spd = 0;
-	    } else if (wpm <= 20) {
-	      this.spd = 0.2;
-	    } else if (wpm <= 40) {
-	      this.spd = 0.4;
-	    } else if (wpm <= 60) {
-	      this.spd = 0.6;
-	    } else if (wpm <= 80) {
-	      this.spd = 0.8;
-	    } else if (wpm <= 100) {
-	      this.spd = 1;
-	    } else {
-	      this.spd = 1.2;
-	    }
 	  }
 	}
 	module.exports = Car;

@@ -145,8 +145,6 @@ inputDiv.onkeyup = e => {
   })
 }
 socket.on('newPosition', pack => {
-  // console.log(pack);
-
   if (typeof player1 === 'undefined' || typeof player2 === 'undefined'){
     return;
   } else if (player1.car === null || player2.car === null){
@@ -159,8 +157,6 @@ socket.on('newPosition', pack => {
     player1.car.drawCar(pack[i].x);
     player2.car.drawCar(pack[i + 1].x)
   }
-  // triggerGetPosition();
-  // console.log('interval', interval);
   if (game.time.timer === 0){
     clearInterval(interval);
   }
