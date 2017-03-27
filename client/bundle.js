@@ -462,17 +462,11 @@
 
 	class Typing {
 	  constructor(game, wpm, wordsArray) {
-	    // this.typedWord = "";
 	    this.cursorPos = 0;
 	    this.wordsArray = wordsArray;
 	    this.numCorrect = 0;
-	    this.numWrong = 0;
 	    this.game = game;
 	    this.currentWord = "";
-	    // this.wpm = wpm;
-	    // this.animationId = null;
-	    // this.noInput = true;
-	    // this.childNodes = [];
 	    this.lastWord = "";
 
 	    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
@@ -488,6 +482,7 @@
 	    span.textContent = `${ this.lastWord } `;
 	    if (this.isCorrectWord()) {
 	      span.className = 'gray';
+	      this.numCorrect++;
 	    } else {
 	      span.className = 'red';
 	    }
@@ -495,17 +490,13 @@
 	  }
 	  removeWord() {
 	    if (inputDiv.childElementCount < 1) {
-	      // inputDiv.firstChild.data = "";
 	      inputDiv.textContent = "";
 	    } else {
 	      inputDiv.lastChild.innerText = inputDiv.lastChild.innerText.slice(0, inputDiv.lastChild.innerText.length - this.lastWord.length);
 	    }
 	  }
 	  handleKeyEvent(e) {
-	    this.noInput = false;
 	    const alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
-	    // let lastWord = this.typedWord.split(" ")[this.cursorPos];
-	    let sentenceLength = inputDiv.innerHTML.length;
 
 	    let span = document.createElement('span');
 	    if (e.keyCode === 32) {
@@ -557,7 +548,6 @@
 	  highlightCurrentWord(position) {
 	    this.getWord(position);
 	    const currentWordSpan = document.createElement('span');
-	    // console.log(this.currentWord);
 	    currentWordSpan.textContent = `${ this.currentWord } `;
 
 	    const highlightedElement = document.getElementsByClassName("highlight")[0];
