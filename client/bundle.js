@@ -287,7 +287,7 @@
 	    inputDiv.blur();
 	    const modal = document.getElementById('modal');
 	    modal.style.display = 'block';
-	    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numCorrect, this.typing.numWrong);
+	    this.wpm.displayResults(this.typing.numCorrect, this.typing.cursorPos, this.time.maxTime);
 	  }
 	  // continueGame(){
 	  //   const ctx = document.getElementById('canvas').getContext('2d');
@@ -396,10 +396,10 @@
 	      this.width = 0;
 	    }
 	    this.displayTimer();
-	    this.game.wpm.calculateWPM(this, this.game.typing.numCorrect);
+	    this.game.wpm.calculateWPM(this.game.typing.charCount, this.timeLeft, this.maxTime);
 	    this.game.wpm.displayWPM();
 
-	    if (this.timer === 0) {
+	    if (this.timeLeft === 0) {
 	      this.game.gameOver(this.timer, this.game.typing.numWrong);
 	    }
 	  }
@@ -413,20 +413,21 @@
 	class WordCalculation {
 	  constructor() {
 	    this.currentWPM = 0;
-	    this.totalTime = 0;
 	  }
-	  calculateWPM(time, right) {
+	  calculateWPM(charCount, timeLeft, maxTime) {
 	    // time object
-	    this.totalTime = time.initialTime;
-	    let currentTimeLeft = this.totalTime - time.timer;
-	    this.currentWPM = Math.floor(right / currentTimeLeft * 60);
+	    //raw WPM = (charCount / 5) / time
+	    let timeSpent = (maxTime - timeLeft) / 60;
+	    this.currentWPM = Math.floor(charCount / 5 / timeSpent);
 	  }
-	  adjustedWPM(right, wrong) {
+	  adjustedWPM(right, wordCount, maxTime) {
 	    // time object
-	    let adjusted = this.currentWPM - wrong / this.totalTime * 60;
+	    let wrong = wordCount - right;
+	    let adjusted = Math.floor(this.currentWPM - wrong / maxTime / 60);
 	    return adjusted <= 0 ? 0 : adjusted;
 	  }
-	  accuracy(right, wrong) {
+	  accuracy(right, wordCount) {
+	    let wrong = wordCount - right;
 	    return Math.floor(right / (wrong + right) * 100);
 	  }
 	  displayWPM() {
@@ -435,10 +436,10 @@
 	    wpmDiv.removeChild(span);
 	    wpmDiv.appendChild(this.createSpan(this.currentWPM, 'wpm'));
 	  }
-	  displayResults(time, text, right, wrong, actualText) {
+	  displayResults(right, wordCount, maxTime) {
 	    const resultDivs = document.getElementsByClassName('result');
-	    let adjusted = this.adjustedWPM(right, wrong);
-	    let accuracy = this.accuracy(right, wrong);
+	    let adjusted = this.adjustedWPM(right, wordCount, maxTime);
+	    let accuracy = this.accuracy(right, wordCount);
 	    resultDivs[0].appendChild(this.createSpan(this.currentWPM, 'WPM'));
 	    resultDivs[1].appendChild(this.createSpan(adjusted, 'WPM'));
 	    resultDivs[2].appendChild(this.createSpan(accuracy, '%'));
@@ -468,6 +469,7 @@
 	    this.game = game;
 	    this.currentWord = "";
 	    this.lastWord = "";
+	    this.charCount = 0;
 
 	    inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
 	  }
@@ -508,6 +510,7 @@
 	      moveCursor(inputDiv); // move the pointer
 	      this.cursorPos++;
 	      document.execCommand('forecolor', false, '000000');
+	      this.charCount++;
 	    } else if (e.keyCode === 8) {
 	      // backspace
 	      // 2 scenario to delete
@@ -529,9 +532,11 @@
 	        this.cursorPos--;
 	        this.highlightCurrentWord(this.cursorPos);
 	      }
+	      this.charCount--;
 	    } else if (alphabet.includes(e.key.toLowerCase())) {
 	      this.typedWord += e.key;
 	      this.lastWord += e.key;
+	      this.charCount++;
 	    } else {
 	      e.preventDefault();
 	    }

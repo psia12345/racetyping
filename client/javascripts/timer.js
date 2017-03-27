@@ -16,10 +16,10 @@ class Timer{
 
     if (this.width <= 0){ this.width = 0 }
     this.displayTimer();
-    this.game.wpm.calculateWPM(this, this.game.typing.numCorrect)
+    this.game.wpm.calculateWPM( this.game.typing.charCount, this.timeLeft, this.maxTime)
     this.game.wpm.displayWPM();
 
-    if (this.timer === 0){
+    if (this.timeLeft === 0){
       this.game.gameOver(this.timer, this.game.typing.numWrong);
     }
   }

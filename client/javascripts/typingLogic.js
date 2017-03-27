@@ -10,6 +10,7 @@ class Typing{
     this.game = game;
     this.currentWord = "";
     this.lastWord = "";
+    this.charCount = 0;
 
     inputDiv.addEventListener('keydown', this.handleKeyEvent.bind(this));
   }
@@ -49,6 +50,7 @@ class Typing{
       moveCursor(inputDiv); // move the pointer
       this.cursorPos++;
       document.execCommand('forecolor', false, '000000');
+      this.charCount++;
     } else if (e.keyCode === 8){ // backspace
       // 2 scenario to delete
       //1. in the middle of a word
@@ -68,9 +70,11 @@ class Typing{
         this.cursorPos--;
         this.highlightCurrentWord(this.cursorPos);
       }
+      this.charCount--;
     } else if (alphabet.includes(e.key.toLowerCase())){
       this.typedWord += e.key;
       this.lastWord += e.key;
+      this.charCount++; 
     } else {
       e.preventDefault();
     }

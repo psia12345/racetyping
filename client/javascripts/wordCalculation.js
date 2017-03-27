@@ -1,19 +1,20 @@
 class WordCalculation {
   constructor(){
     this.currentWPM = 0;
-    this.totalTime = 0;
   }
-  calculateWPM(time, right) { // time object
-    this.totalTime = time.initialTime;
-    let currentTimeLeft = this.totalTime - time.timer;
-    this.currentWPM = Math.floor(right / currentTimeLeft * 60);
+  calculateWPM(charCount, timeLeft, maxTime) { // time object
+    //raw WPM = (charCount / 5) / time
+    let timeSpent = (maxTime - timeLeft) / 60;
+    this.currentWPM = Math.floor( (charCount / 5) / timeSpent);
   }
-  adjustedWPM(right, wrong){ // time object
-    let adjusted = this.currentWPM - (wrong / this.totalTime * 60);
+  adjustedWPM(right, wordCount, maxTime){ // time object
+    let wrong = wordCount - right;
+    let adjusted = Math.floor(this.currentWPM - ( wrong / maxTime / 60));
     return adjusted <= 0 ? 0 : adjusted
   }
-  accuracy(right, wrong){
-    return Math.floor((right) / (wrong + right) * 100);
+  accuracy(right, wordCount){
+    let wrong  = wordCount - right;
+    return Math.floor( (right / (wrong + right)) * 100);
   }
   displayWPM(){
     const wpmDiv = document.getElementById('wpm');
@@ -21,10 +22,10 @@ class WordCalculation {
     wpmDiv.removeChild(span);
     wpmDiv.appendChild(this.createSpan(this.currentWPM, 'wpm'));
   }
-  displayResults(time, text, right, wrong, actualText){
+  displayResults(right, wordCount, maxTime){
     const resultDivs = document.getElementsByClassName('result');
-    let adjusted = this.adjustedWPM(right, wrong);
-    let accuracy = this.accuracy(right, wrong);
+    let adjusted = this.adjustedWPM(right, wordCount, maxTime);
+    let accuracy = this.accuracy(right, wordCount);
     resultDivs[0].appendChild(this.createSpan(this.currentWPM, 'WPM'));
     resultDivs[1].appendChild(this.createSpan(adjusted, 'WPM'));
     resultDivs[2].appendChild(this.createSpan(accuracy, '%'));

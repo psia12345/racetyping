@@ -49,7 +49,7 @@ class Game{
     inputDiv.blur();
     const modal = document.getElementById('modal');
     modal.style.display = 'block';
-    this.wpm.displayResults(this.time, this.typing.typedWord, this.typing.numCorrect, this.typing.numWrong);
+    this.wpm.displayResults( this.typing.numCorrect, this.typing.cursorPos, this.time.maxTime);
   }
   // continueGame(){
   //   const ctx = document.getElementById('canvas').getContext('2d');
